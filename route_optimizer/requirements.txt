@@ -1,0 +1,5 @@
+flask==2.0.1 
+requests==2.26.0 
+ortools==9.10.4067 
+google-api-python-client==2.15.0 
+python-dotenv==0.19
