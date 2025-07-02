@@ -13,3 +13,4 @@ ipykernel==6.25.0
 deap==1.4.1
 scipy==1.11.1
 openpyxl==3.1.2
+polyline==2.0.0

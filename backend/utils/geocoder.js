@@ -78,7 +78,7 @@ exports.getAddressSuggestions = async (input) => {
         input: input,
         key: GOOGLE_MAPS_API_KEY,
         types: 'address',
-        components: 'country:us' // Restrict to US for Walmart
+        components: 'country:in' // Restrict to US for Walmart
       }
     });
 

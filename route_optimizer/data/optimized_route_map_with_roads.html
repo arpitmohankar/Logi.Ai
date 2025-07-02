@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_9b61efbbefaaf37a682969a8c640231a {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+    <div style="position: fixed; 
+                bottom: 50px; right: 50px; width: 320px; height: auto; 
+                background-color: white; border:2px solid grey; z-index:9999; 
+                font-size:14px; padding: 15px; border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+        <h4 style="margin: 0 0 10px 0;">Route Information</h4>
+        <p style="margin: 5px 0;"><b>Starting Point:</b> Depot/Warehouse</p>
+        <p style="margin: 5px 0;"><b>Delivery Stops:</b> 10</p>
+        <p style="margin: 5px 0;"><b>Total Time:</b> 273.4 min (4.6 hrs)</p>
+        <p style="margin: 5px 0;"><b>Route Segments:</b> 0 of 11</p>
+        <hr style="margin: 10px 0;">
+        <p style="margin: 5px 0;"><b>Route Colors:</b></p>
+        <p style="margin: 3px 0 3px 15px;"><span style="color: #228B22;">━━</span> Fast (&lt;20 min)</p>
+        <p style="margin: 3px 0 3px 15px;"><span style="color: #FF8C00;">━━</span> Moderate (20-30 min)</p>
+        <p style="margin: 3px 0 3px 15px;"><span style="color: #8B0000;">━━</span> Slow (&gt;30 min)</p>
+        <p style="margin: 3px 0 3px 15px;"><span style="color: #9370DB;">━━</span> Return to Start</p>
+        <p style="margin: 3px 0 3px 15px;"><span style="color: gray;">┅┅</span> Direct line (API failed)</p>
+        <hr style="margin: 10px 0;">
+        <p style="margin: 5px 0; font-size: 12px; color: #666;">
+            <b>Note:</b> Routes follow actual roads via Google Directions API
+        </p>
+    </div>
+    
+    
+    <div style="position: fixed; 
+                top: 10px; right: 10px; 
+                z-index: 9999;">
+        <a href="https://www.google.com/maps/dir/19.197390924721947,72.99068873350765/18.93,72.83/18.93,72.82/19.01,72.82/19.05,72.83/19.08,72.83/19.13,72.82/19.14,72.83/19.18,72.83/19.1,72.92/19.21,72.97/19.197390924721947,72.99068873350765/" target="_blank" 
+           style="display: inline-block; background-color: #4285f4; color: white; 
+                  padding: 10px 20px; text-decoration: none; border-radius: 5px; 
+                  font-size: 14px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+            📍 Open in Google Maps
+        </a>
+    </div>
+    
+    
+            <div class="folium-map" id="map_9b61efbbefaaf37a682969a8c640231a" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_9b61efbbefaaf37a682969a8c640231a = L.map(
+                "map_9b61efbbefaaf37a682969a8c640231a",
+                {
+                    center: [19.087035538611087, 72.86278988486433],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 12,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_6e7447f3145df3eb0cc722644fdb8495 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var marker_15997149109df3379722250aef5580b5 = L.marker(
+                [19.197390924721947, 72.99068873350765],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_5056774babc7dcbc288545c6326ce23d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "home", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_15997149109df3379722250aef5580b5.setIcon(icon_5056774babc7dcbc288545c6326ce23d);
+        
+    
+        var popup_13402126cbb2662481eb8bb2c877ff3d = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_3a01ad0ab9de2f090cf0f2ffc58abee4 = $(`<div id="html_3a01ad0ab9de2f090cf0f2ffc58abee4" style="width: 100.0%; height: 100.0%;">Starting Point (Depot/Warehouse)</div>`)[0];
+                popup_13402126cbb2662481eb8bb2c877ff3d.setContent(html_3a01ad0ab9de2f090cf0f2ffc58abee4);
+            
+        
+
+        marker_15997149109df3379722250aef5580b5.bindPopup(popup_13402126cbb2662481eb8bb2c877ff3d)
+        ;
+
+        
+    
+    
+            marker_15997149109df3379722250aef5580b5.bindTooltip(
+                `<div>
+                     Starting Point
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_31c8eac434c685887a78860e9bdae85b = L.marker(
+                [18.93, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_e70a3f4e70a401d0dd183c39135b8596 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_31c8eac434c685887a78860e9bdae85b.setIcon(icon_e70a3f4e70a401d0dd183c39135b8596);
+        
+    
+        var popup_937728bf5cd147ba88f4d9251e2bdfdc = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_ac5a41bbcf2a31c6e0d8a555ff5b751e = $(`<div id="html_ac5a41bbcf2a31c6e0d8a555ff5b751e" style="width: 100.0%; height: 100.0%;">         <b>Stop 1: Fort</b><br>         <b>Address:</b> Elphinstone Building, Horniman Circle, Veer Nariman Road, Fort<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_937728bf5cd147ba88f4d9251e2bdfdc.setContent(html_ac5a41bbcf2a31c6e0d8a555ff5b751e);
+            
+        
+
+        marker_31c8eac434c685887a78860e9bdae85b.bindPopup(popup_937728bf5cd147ba88f4d9251e2bdfdc)
+        ;
+
+        
+    
+    
+            marker_31c8eac434c685887a78860e9bdae85b.bindTooltip(
+                `<div>
+                     Stop 1: Fort
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_58db2765d95904b8811c5326ef90f704 = L.marker(
+                [18.93, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_c77cf7d8ac1e8f7d63c8a912b6a2d850 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e1\u003c/div\u003e"});
+            marker_58db2765d95904b8811c5326ef90f704.setIcon(div_icon_c77cf7d8ac1e8f7d63c8a912b6a2d850);
+        
+    
+            var marker_f00339a05e577f31e22d00222ad24293 = L.marker(
+                [18.93, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_9ace01473044047f00d3e4e1c5ced062 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_f00339a05e577f31e22d00222ad24293.setIcon(icon_9ace01473044047f00d3e4e1c5ced062);
+        
+    
+        var popup_70bdbea1cc2ec3a0c8e94cc5d83f1902 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_14890092b06548500d8f6105d5be4c5b = $(`<div id="html_14890092b06548500d8f6105d5be4c5b" style="width: 100.0%; height: 100.0%;">         <b>Stop 2: Nariman Point</b><br>         <b>Address:</b> Ground Floor, Shree Nirmal Building, Behind Trident Hotel, Nariman Point<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_70bdbea1cc2ec3a0c8e94cc5d83f1902.setContent(html_14890092b06548500d8f6105d5be4c5b);
+            
+        
+
+        marker_f00339a05e577f31e22d00222ad24293.bindPopup(popup_70bdbea1cc2ec3a0c8e94cc5d83f1902)
+        ;
+
+        
+    
+    
+            marker_f00339a05e577f31e22d00222ad24293.bindTooltip(
+                `<div>
+                     Stop 2: Nariman Point
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_4cc3fbd7e0e2ba7ef09e35fc160eb1b8 = L.marker(
+                [18.93, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_097d677cc4d535fbf3b989a6c311fa21 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e2\u003c/div\u003e"});
+            marker_4cc3fbd7e0e2ba7ef09e35fc160eb1b8.setIcon(div_icon_097d677cc4d535fbf3b989a6c311fa21);
+        
+    
+            var marker_aa52c5f254ba1641477e8120c5bf311e = L.marker(
+                [19.01, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_21b1822dbbbdf02db800babe3bd53776 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_aa52c5f254ba1641477e8120c5bf311e.setIcon(icon_21b1822dbbbdf02db800babe3bd53776);
+        
+    
+        var popup_a6c6a184469c6d6fa26cf40c5ca7f7f1 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_712893aa8c4cb3fc7c2e2881b6f3734d = $(`<div id="html_712893aa8c4cb3fc7c2e2881b6f3734d" style="width: 100.0%; height: 100.0%;">         <b>Stop 3: Prabhadevi</b><br>         <b>Address:</b> Upper Ground Floor, Century Bhavan, Century Bazaar, Prabhadevi<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_a6c6a184469c6d6fa26cf40c5ca7f7f1.setContent(html_712893aa8c4cb3fc7c2e2881b6f3734d);
+            
+        
+
+        marker_aa52c5f254ba1641477e8120c5bf311e.bindPopup(popup_a6c6a184469c6d6fa26cf40c5ca7f7f1)
+        ;
+
+        
+    
+    
+            marker_aa52c5f254ba1641477e8120c5bf311e.bindTooltip(
+                `<div>
+                     Stop 3: Prabhadevi
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_cfc724d5b8d60cd96b5b7197d68a1832 = L.marker(
+                [19.01, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_3acad62d1faf3f922f0c53f58c75530d = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e3\u003c/div\u003e"});
+            marker_cfc724d5b8d60cd96b5b7197d68a1832.setIcon(div_icon_3acad62d1faf3f922f0c53f58c75530d);
+        
+    
+            var marker_ee5e54df53e5f9dcf5c6812169a85b51 = L.marker(
+                [19.05, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_53160366414e69742dfa1b35cdf68043 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_ee5e54df53e5f9dcf5c6812169a85b51.setIcon(icon_53160366414e69742dfa1b35cdf68043);
+        
+    
+        var popup_9f5cbdf3b138c71e707856ee2c436ee1 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_90889673a0ca7684603712dc3fa34fee = $(`<div id="html_90889673a0ca7684603712dc3fa34fee" style="width: 100.0%; height: 100.0%;">         <b>Stop 4: Bandra West - Chapel road</b><br>         <b>Address:</b> Reclamation, Chapel Road, Near Lilavati Hospital<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_9f5cbdf3b138c71e707856ee2c436ee1.setContent(html_90889673a0ca7684603712dc3fa34fee);
+            
+        
+
+        marker_ee5e54df53e5f9dcf5c6812169a85b51.bindPopup(popup_9f5cbdf3b138c71e707856ee2c436ee1)
+        ;
+
+        
+    
+    
+            marker_ee5e54df53e5f9dcf5c6812169a85b51.bindTooltip(
+                `<div>
+                     Stop 4: Bandra West - Chapel road
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_416e1fe8204d8531f5e840759c8e11bc = L.marker(
+                [19.05, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_4d73e7ff5928e784b9146d4a5419a170 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e4\u003c/div\u003e"});
+            marker_416e1fe8204d8531f5e840759c8e11bc.setIcon(div_icon_4d73e7ff5928e784b9146d4a5419a170);
+        
+    
+            var marker_02c0fab804dae94accbffa683ddb23fe = L.marker(
+                [19.08, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_53406eebd8fe472ba979b501bcf27993 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_02c0fab804dae94accbffa683ddb23fe.setIcon(icon_53406eebd8fe472ba979b501bcf27993);
+        
+    
+        var popup_b4aec2e43fde9380d1097edc51157f38 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_39b351905298e10f25766120d4bf1f48 = $(`<div id="html_39b351905298e10f25766120d4bf1f48" style="width: 100.0%; height: 100.0%;">         <b>Stop 5: Santacruz West</b><br>         <b>Address:</b> Grd Flr Red Chillies Entertainment Bldg, Jct of 15th Rd and Ram Krishna MissionRd<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_b4aec2e43fde9380d1097edc51157f38.setContent(html_39b351905298e10f25766120d4bf1f48);
+            
+        
+
+        marker_02c0fab804dae94accbffa683ddb23fe.bindPopup(popup_b4aec2e43fde9380d1097edc51157f38)
+        ;
+
+        
+    
+    
+            marker_02c0fab804dae94accbffa683ddb23fe.bindTooltip(
+                `<div>
+                     Stop 5: Santacruz West
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_4fed92a4b8b1ddca11566d359a79adc6 = L.marker(
+                [19.08, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_9d5b8b35797f17c569d9710c7c4498e3 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e5\u003c/div\u003e"});
+            marker_4fed92a4b8b1ddca11566d359a79adc6.setIcon(div_icon_9d5b8b35797f17c569d9710c7c4498e3);
+        
+    
+            var marker_12b9c17e3f3b26efabb94ed458970b20 = L.marker(
+                [19.13, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_022f715b4e71b2144e030cba8aca0d2d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_12b9c17e3f3b26efabb94ed458970b20.setIcon(icon_022f715b4e71b2144e030cba8aca0d2d);
+        
+    
+        var popup_75808db63a25fa0adb78e15d5971d425 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_7d8683a099044ff242e7057f9409c849 = $(`<div id="html_7d8683a099044ff242e7057f9409c849" style="width: 100.0%; height: 100.0%;">         <b>Stop 6: Andheri West - Four Bunglows</b><br>         <b>Address:</b> Kokilaben Dhirubhai Ambani Hospital, Four Bunglows, Andheri (West)<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_75808db63a25fa0adb78e15d5971d425.setContent(html_7d8683a099044ff242e7057f9409c849);
+            
+        
+
+        marker_12b9c17e3f3b26efabb94ed458970b20.bindPopup(popup_75808db63a25fa0adb78e15d5971d425)
+        ;
+
+        
+    
+    
+            marker_12b9c17e3f3b26efabb94ed458970b20.bindTooltip(
+                `<div>
+                     Stop 6: Andheri West - Four Bunglows
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_e688e490cd1f83687a8ab43dd86b5837 = L.marker(
+                [19.13, 72.82],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_ee4df45054d1cf801c5f79be3440304d = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e6\u003c/div\u003e"});
+            marker_e688e490cd1f83687a8ab43dd86b5837.setIcon(div_icon_ee4df45054d1cf801c5f79be3440304d);
+        
+    
+            var marker_a9029bc4907d248dc0613e100803caf2 = L.marker(
+                [19.14, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_1c5e63ba2709c015699853368e925ea8 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_a9029bc4907d248dc0613e100803caf2.setIcon(icon_1c5e63ba2709c015699853368e925ea8);
+        
+    
+        var popup_08d8a8c3e728efc66c0768972e219c50 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_1f7f4f3254567219fb776beba8bc92c3 = $(`<div id="html_1f7f4f3254567219fb776beba8bc92c3" style="width: 100.0%; height: 100.0%;">         <b>Stop 7: Andheri West - Infiniti Mall</b><br>         <b>Address:</b> Ground Floor, Infiniti Mall, New Link Road, Andheri (West)<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_08d8a8c3e728efc66c0768972e219c50.setContent(html_1f7f4f3254567219fb776beba8bc92c3);
+            
+        
+
+        marker_a9029bc4907d248dc0613e100803caf2.bindPopup(popup_08d8a8c3e728efc66c0768972e219c50)
+        ;
+
+        
+    
+    
+            marker_a9029bc4907d248dc0613e100803caf2.bindTooltip(
+                `<div>
+                     Stop 7: Andheri West - Infiniti Mall
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_930d18d2d9b70d2669a38f92126ba283 = L.marker(
+                [19.14, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_8d103df99a69587e422a98759d4dcea2 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e7\u003c/div\u003e"});
+            marker_930d18d2d9b70d2669a38f92126ba283.setIcon(div_icon_8d103df99a69587e422a98759d4dcea2);
+        
+    
+            var marker_f3f5d005c94257c8e6060d0f78e4d97e = L.marker(
+                [19.18, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_ae3bfbc29e0eedcf94e15aa2d31c6575 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_f3f5d005c94257c8e6060d0f78e4d97e.setIcon(icon_ae3bfbc29e0eedcf94e15aa2d31c6575);
+        
+    
+        var popup_6901174eccc294f6bbb2ded53d177dfd = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_51a0697bcd94410df65dad4bc4a2435d = $(`<div id="html_51a0697bcd94410df65dad4bc4a2435d" style="width: 100.0%; height: 100.0%;">         <b>Stop 8: Malad West - Infiniti Mall</b><br>         <b>Address:</b> Upper Ground Floor, Infiniti Mall, Link Road,  Malad (West)<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_6901174eccc294f6bbb2ded53d177dfd.setContent(html_51a0697bcd94410df65dad4bc4a2435d);
+            
+        
+
+        marker_f3f5d005c94257c8e6060d0f78e4d97e.bindPopup(popup_6901174eccc294f6bbb2ded53d177dfd)
+        ;
+
+        
+    
+    
+            marker_f3f5d005c94257c8e6060d0f78e4d97e.bindTooltip(
+                `<div>
+                     Stop 8: Malad West - Infiniti Mall
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2aa519ac02795d612bc7534e06e50791 = L.marker(
+                [19.18, 72.83],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_b596d64a3130d20d52eda7bc6b66788a = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e8\u003c/div\u003e"});
+            marker_2aa519ac02795d612bc7534e06e50791.setIcon(div_icon_b596d64a3130d20d52eda7bc6b66788a);
+        
+    
+            var marker_a066a09b092f6d42d40aa7e3f1d18083 = L.marker(
+                [19.1, 72.92],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_0057e07add0bdafe9d1660999e53cf7f = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_a066a09b092f6d42d40aa7e3f1d18083.setIcon(icon_0057e07add0bdafe9d1660999e53cf7f);
+        
+    
+        var popup_6944101111886794f51f751cec6df8f1 = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_ae4a4a47a9f650a10d18cdf624ea7fa0 = $(`<div id="html_ae4a4a47a9f650a10d18cdf624ea7fa0" style="width: 100.0%; height: 100.0%;">         <b>Stop 9: Ghatkopar West</b><br>         <b>Address:</b> Gound Floor, R City Mall, Lal Bahadur Shastri Marg<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_6944101111886794f51f751cec6df8f1.setContent(html_ae4a4a47a9f650a10d18cdf624ea7fa0);
+            
+        
+
+        marker_a066a09b092f6d42d40aa7e3f1d18083.bindPopup(popup_6944101111886794f51f751cec6df8f1)
+        ;
+
+        
+    
+    
+            marker_a066a09b092f6d42d40aa7e3f1d18083.bindTooltip(
+                `<div>
+                     Stop 9: Ghatkopar West
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a2de8a8d15d71648d7bd7029be97c683 = L.marker(
+                [19.1, 72.92],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_d0dcd31448e378daaeaf3afcf75b2fed = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e9\u003c/div\u003e"});
+            marker_a2de8a8d15d71648d7bd7029be97c683.setIcon(div_icon_d0dcd31448e378daaeaf3afcf75b2fed);
+        
+    
+            var marker_b0fbc250ca7b9a21a482e040358904ee = L.marker(
+                [19.21, 72.97],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var icon_d3aef2c5d742d4f8924a2fd620ca7dc3 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "coffee", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_b0fbc250ca7b9a21a482e040358904ee.setIcon(icon_d3aef2c5d742d4f8924a2fd620ca7dc3);
+        
+    
+        var popup_2d80a673d33eca57f2b73839cc1dbb5e = L.popup({"maxWidth": 300});
+
+        
+            
+                var html_d847e392e7454fd341af741c1c848ada = $(`<div id="html_d847e392e7454fd341af741c1c848ada" style="width: 100.0%; height: 100.0%;">         <b>Stop 10: Thane West - Viviana Mall</b><br>         <b>Address:</b> Ground Floor, Viviana Mall, Thane West, Opp Eastern Express Highway<br>         <b>Weather:</b> Moderate or heavy rain shower, 26.3°C<br>         </div>`)[0];
+                popup_2d80a673d33eca57f2b73839cc1dbb5e.setContent(html_d847e392e7454fd341af741c1c848ada);
+            
+        
+
+        marker_b0fbc250ca7b9a21a482e040358904ee.bindPopup(popup_2d80a673d33eca57f2b73839cc1dbb5e)
+        ;
+
+        
+    
+    
+            marker_b0fbc250ca7b9a21a482e040358904ee.bindTooltip(
+                `<div>
+                     Stop 10: Thane West - Viviana Mall
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_054ea2a6b280643efdd958676181a324 = L.marker(
+                [19.21, 72.97],
+                {}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+            var div_icon_a98b0ff295609d225a5003d78a7662c1 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 12pt; font-weight: bold; color: white; \n                background-color: blue; width: 25px; height: 25px; \n                border-radius: 50%; text-align: center; \n                line-height: 25px; margin-top: -35px; margin-left: 5px;\"\u003e10\u003c/div\u003e"});
+            marker_054ea2a6b280643efdd958676181a324.setIcon(div_icon_a98b0ff295609d225a5003d78a7662c1);
+        
+    
+            var poly_line_53fa858d9545b8ffa23a95543145497b = L.polyline(
+                [[19.197390924721947, 72.99068873350765], [18.93, 72.83]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_d85ad82177fc0fd25188fc36c33e597b = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_8f7b0f76641338de4e1b9d69897ea5c0 = $(`<div id="html_8f7b0f76641338de4e1b9d69897ea5c0" style="width: 100.0%; height: 100.0%;">Start → Stop 1 (Direct line - API failed)</div>`)[0];
+                popup_d85ad82177fc0fd25188fc36c33e597b.setContent(html_8f7b0f76641338de4e1b9d69897ea5c0);
+            
+        
+
+        poly_line_53fa858d9545b8ffa23a95543145497b.bindPopup(popup_d85ad82177fc0fd25188fc36c33e597b)
+        ;
+
+        
+    
+    
+            var poly_line_26da26045b0308d02faa608ab87265ee = L.polyline(
+                [[18.93, 72.83], [18.93, 72.82]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_cb331f2841de3b083656501130a6f776 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_d76882c535ec38dd2961ec32a1c2d45b = $(`<div id="html_d76882c535ec38dd2961ec32a1c2d45b" style="width: 100.0%; height: 100.0%;">Stop 1 → Stop 2 (Direct line - API failed)</div>`)[0];
+                popup_cb331f2841de3b083656501130a6f776.setContent(html_d76882c535ec38dd2961ec32a1c2d45b);
+            
+        
+
+        poly_line_26da26045b0308d02faa608ab87265ee.bindPopup(popup_cb331f2841de3b083656501130a6f776)
+        ;
+
+        
+    
+    
+            var poly_line_19197710130e1308dfcd04bc62ca4f55 = L.polyline(
+                [[18.93, 72.82], [19.01, 72.82]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_2ddbbd78f91b81ae96e78847561a5c1a = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_79b4bbec011785f1510dcfcea98512c8 = $(`<div id="html_79b4bbec011785f1510dcfcea98512c8" style="width: 100.0%; height: 100.0%;">Stop 2 → Stop 3 (Direct line - API failed)</div>`)[0];
+                popup_2ddbbd78f91b81ae96e78847561a5c1a.setContent(html_79b4bbec011785f1510dcfcea98512c8);
+            
+        
+
+        poly_line_19197710130e1308dfcd04bc62ca4f55.bindPopup(popup_2ddbbd78f91b81ae96e78847561a5c1a)
+        ;
+
+        
+    
+    
+            var poly_line_105f7b1895436c888eea9c7ba6e7a46e = L.polyline(
+                [[19.01, 72.82], [19.05, 72.83]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_322f70f406acc043ae6de0ea950249c1 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_d61c5cb3ec17a0ebbb253a5712814c85 = $(`<div id="html_d61c5cb3ec17a0ebbb253a5712814c85" style="width: 100.0%; height: 100.0%;">Stop 3 → Stop 4 (Direct line - API failed)</div>`)[0];
+                popup_322f70f406acc043ae6de0ea950249c1.setContent(html_d61c5cb3ec17a0ebbb253a5712814c85);
+            
+        
+
+        poly_line_105f7b1895436c888eea9c7ba6e7a46e.bindPopup(popup_322f70f406acc043ae6de0ea950249c1)
+        ;
+
+        
+    
+    
+            var poly_line_c9bda64ae9e843d7f19884b736425242 = L.polyline(
+                [[19.05, 72.83], [19.08, 72.83]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_16921dd4421b0c33ec93baeb2d4c3c93 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_ee113f5b5352b9e3f07d7a77eaa33bc1 = $(`<div id="html_ee113f5b5352b9e3f07d7a77eaa33bc1" style="width: 100.0%; height: 100.0%;">Stop 4 → Stop 5 (Direct line - API failed)</div>`)[0];
+                popup_16921dd4421b0c33ec93baeb2d4c3c93.setContent(html_ee113f5b5352b9e3f07d7a77eaa33bc1);
+            
+        
+
+        poly_line_c9bda64ae9e843d7f19884b736425242.bindPopup(popup_16921dd4421b0c33ec93baeb2d4c3c93)
+        ;
+
+        
+    
+    
+            var poly_line_1bb98756af4c50505b0f4968605ecdff = L.polyline(
+                [[19.08, 72.83], [19.13, 72.82]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_15635475d43ae55f0bd2560c8a8d3c87 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_b9f54a109753b371e9d0c0e8d564d0a0 = $(`<div id="html_b9f54a109753b371e9d0c0e8d564d0a0" style="width: 100.0%; height: 100.0%;">Stop 5 → Stop 6 (Direct line - API failed)</div>`)[0];
+                popup_15635475d43ae55f0bd2560c8a8d3c87.setContent(html_b9f54a109753b371e9d0c0e8d564d0a0);
+            
+        
+
+        poly_line_1bb98756af4c50505b0f4968605ecdff.bindPopup(popup_15635475d43ae55f0bd2560c8a8d3c87)
+        ;
+
+        
+    
+    
+            var poly_line_915be46ea3e2fa7aa0e6ee6f6ddfaac9 = L.polyline(
+                [[19.13, 72.82], [19.14, 72.83]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_e12faa5f739e66732f23310b00dcecbe = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_f99018a80e1e2a4caf6850991328f9de = $(`<div id="html_f99018a80e1e2a4caf6850991328f9de" style="width: 100.0%; height: 100.0%;">Stop 6 → Stop 7 (Direct line - API failed)</div>`)[0];
+                popup_e12faa5f739e66732f23310b00dcecbe.setContent(html_f99018a80e1e2a4caf6850991328f9de);
+            
+        
+
+        poly_line_915be46ea3e2fa7aa0e6ee6f6ddfaac9.bindPopup(popup_e12faa5f739e66732f23310b00dcecbe)
+        ;
+
+        
+    
+    
+            var poly_line_809b27432969b7b64e59023d57feb3fc = L.polyline(
+                [[19.14, 72.83], [19.18, 72.83]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_986af26960f9a929a1d1988a23072ded = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_314de187228428eb99acaf6a9470242a = $(`<div id="html_314de187228428eb99acaf6a9470242a" style="width: 100.0%; height: 100.0%;">Stop 7 → Stop 8 (Direct line - API failed)</div>`)[0];
+                popup_986af26960f9a929a1d1988a23072ded.setContent(html_314de187228428eb99acaf6a9470242a);
+            
+        
+
+        poly_line_809b27432969b7b64e59023d57feb3fc.bindPopup(popup_986af26960f9a929a1d1988a23072ded)
+        ;
+
+        
+    
+    
+            var poly_line_85071a02ef2ba65a03be2dbe84064984 = L.polyline(
+                [[19.18, 72.83], [19.1, 72.92]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_988c73060986baed1aec16238e4e9501 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_d10711fd2e1e59f9e97c366b9c33c957 = $(`<div id="html_d10711fd2e1e59f9e97c366b9c33c957" style="width: 100.0%; height: 100.0%;">Stop 8 → Stop 9 (Direct line - API failed)</div>`)[0];
+                popup_988c73060986baed1aec16238e4e9501.setContent(html_d10711fd2e1e59f9e97c366b9c33c957);
+            
+        
+
+        poly_line_85071a02ef2ba65a03be2dbe84064984.bindPopup(popup_988c73060986baed1aec16238e4e9501)
+        ;
+
+        
+    
+    
+            var poly_line_53bb6221f34ac91d48d83175f3d3ba13 = L.polyline(
+                [[19.1, 72.92], [19.21, 72.97]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_d768dee9f3992da7f479a41f20dc5d54 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_9c54bdad636287792debd00f5b8070d1 = $(`<div id="html_9c54bdad636287792debd00f5b8070d1" style="width: 100.0%; height: 100.0%;">Stop 9 → Stop 10 (Direct line - API failed)</div>`)[0];
+                popup_d768dee9f3992da7f479a41f20dc5d54.setContent(html_9c54bdad636287792debd00f5b8070d1);
+            
+        
+
+        poly_line_53bb6221f34ac91d48d83175f3d3ba13.bindPopup(popup_d768dee9f3992da7f479a41f20dc5d54)
+        ;
+
+        
+    
+    
+            var poly_line_3c8f633061403d2cd961d689a652e11c = L.polyline(
+                [[19.21, 72.97], [19.197390924721947, 72.99068873350765]],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": "10, 10", "dashOffset": null, "fill": false, "fillColor": "gray", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_9b61efbbefaaf37a682969a8c640231a);
+        
+    
+        var popup_adba3013292cd35daa5f93ab42697a46 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a6c76a0633bc34bc4cd4b542a1c7b862 = $(`<div id="html_a6c76a0633bc34bc4cd4b542a1c7b862" style="width: 100.0%; height: 100.0%;">Stop 10 → Start (Return) (Direct line - API failed)</div>`)[0];
+                popup_adba3013292cd35daa5f93ab42697a46.setContent(html_a6c76a0633bc34bc4cd4b542a1c7b862);
+            
+        
+
+        poly_line_3c8f633061403d2cd961d689a652e11c.bindPopup(popup_adba3013292cd35daa5f93ab42697a46)
+        ;
+
+        
+    
+</script>
+</html>
