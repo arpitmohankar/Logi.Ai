@@ -1,0 +1,259 @@
+{
+  "optimization_summary": {
+    "algorithm": "XGBoost + Genetic Algorithm",
+    "total_locations": 10,
+    "total_travel_time_minutes": 231.66924715042114,
+    "total_travel_time_hours": 3.8611541191736856,
+    "optimization_improvement": "25.4%",
+    "generation_timestamp": "2025-07-02 13:29:37"
+  },
+  "model_performance": {
+    "xgboost_r2_score": 0.9957275282305442,
+    "xgboost_rmse": 1.4430223060988858,
+    "training_samples": 292,
+    "features_used": [
+      "origin_lat",
+      "origin_lon",
+      "dest_lat",
+      "dest_lon",
+      "straight_line_distance",
+      "temperature",
+      "humidity",
+      "wind_speed",
+      "visibility",
+      "precipitation",
+      "hour_of_day",
+      "day_of_week"
+    ]
+  },
+  "route_sequence": [
+    {
+      "sequence": 1,
+      "store_name": "Malad West - Infiniti Mall",
+      "latitude": 19.18,
+      "longitude": 72.83,
+      "address": "Upper Ground Floor, Infiniti Mall, Link Road,  Malad (West)",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 13.294751167297363
+    },
+    {
+      "sequence": 2,
+      "store_name": "Andheri West - Infiniti Mall",
+      "latitude": 19.14,
+      "longitude": 72.83,
+      "address": "Ground Floor, Infiniti Mall, New Link Road, Andheri (West)",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 3.33465838432312
+    },
+    {
+      "sequence": 3,
+      "store_name": "Andheri West - Four Bunglows",
+      "latitude": 19.13,
+      "longitude": 72.82,
+      "address": "Kokilaben Dhirubhai Ambani Hospital, Four Bunglows, Andheri (West)",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 16.900148391723633
+    },
+    {
+      "sequence": 4,
+      "store_name": "Santacruz West",
+      "latitude": 19.08,
+      "longitude": 72.83,
+      "address": "Grd Flr Red Chillies Entertainment Bldg, Jct of 15th Rd and Ram Krishna MissionRd",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 9.962843894958496
+    },
+    {
+      "sequence": 5,
+      "store_name": "Bandra West - Chapel road",
+      "latitude": 19.05,
+      "longitude": 72.83,
+      "address": "Reclamation, Chapel Road, Near Lilavati Hospital",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 13.606040000915527
+    },
+    {
+      "sequence": 6,
+      "store_name": "Prabhadevi",
+      "latitude": 19.01,
+      "longitude": 72.82,
+      "address": "Upper Ground Floor, Century Bhavan, Century Bazaar, Prabhadevi",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 26.318376541137695
+    },
+    {
+      "sequence": 7,
+      "store_name": "Nariman Point",
+      "latitude": 18.93,
+      "longitude": 72.82,
+      "address": "Ground Floor, Shree Nirmal Building, Behind Trident Hotel, Nariman Point",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 3.330469846725464
+    },
+    {
+      "sequence": 8,
+      "store_name": "Fort",
+      "latitude": 18.93,
+      "longitude": 72.83,
+      "address": "Elphinstone Building, Horniman Circle, Veer Nariman Road, Fort",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 61.808170318603516
+    },
+    {
+      "sequence": 9,
+      "store_name": "Ghatkopar West",
+      "latitude": 19.1,
+      "longitude": 72.92,
+      "address": "Gound Floor, R City Mall, Lal Bahadur Shastri Marg",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 38.64785385131836
+    },
+    {
+      "sequence": 10,
+      "store_name": "Thane West - Viviana Mall",
+      "latitude": 19.21,
+      "longitude": 72.97,
+      "address": "Ground Floor, Viviana Mall, Thane West, Opp Eastern Express Highway",
+      "weather": "Moderate or heavy rain shower",
+      "temperature": 28.1,
+      "time_to_next": 44.46593475341797
+    }
+  ],
+  "coordinates_list": [
+    [
+      19.18,
+      72.83
+    ],
+    [
+      19.14,
+      72.83
+    ],
+    [
+      19.13,
+      72.82
+    ],
+    [
+      19.08,
+      72.83
+    ],
+    [
+      19.05,
+      72.83
+    ],
+    [
+      19.01,
+      72.82
+    ],
+    [
+      18.93,
+      72.82
+    ],
+    [
+      18.93,
+      72.83
+    ],
+    [
+      19.1,
+      72.92
+    ],
+    [
+      19.21,
+      72.97
+    ],
+    [
+      19.18,
+      72.83
+    ]
+  ],
+  "weather_conditions": {
+    "1": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 29.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 1.67
+    },
+    "7": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 29.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 1.67
+    },
+    "4": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 29.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 1.67
+    },
+    "2": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 33.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.04
+    },
+    "6": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 33.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.04
+    },
+    "0": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 33.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.04
+    },
+    "3": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 33.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.04
+    },
+    "5": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 33.5,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.04
+    },
+    "8": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 25.9,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.28
+    },
+    "9": {
+      "temperature": 28.1,
+      "humidity": 84,
+      "wind_speed": 25.9,
+      "condition": "Moderate or heavy rain shower",
+      "visibility": 2.5,
+      "precipitation": 2.28
+    }
+  }
+}
