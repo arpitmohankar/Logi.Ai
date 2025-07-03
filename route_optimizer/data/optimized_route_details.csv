@@ -1,0 +1,11 @@
+sequence,location_id,store_name,address,latitude,longitude,weather_condition,temperature,travel_time_from_previous,cumulative_time
+1,4,Nariman Point,"Ground Floor, Shree Nirmal Building, Behind Trident Hotel, Nariman Point",18.93,72.82,Mist,29.4,49.59357833862305,49.59357833862305
+2,6,Fort,"Elphinstone Building, Horniman Circle, Veer Nariman Road, Fort",18.93,72.83,Mist,29.4,15.831171035766602,65.42474937438965
+3,1,Prabhadevi,"Upper Ground Floor, Century Bhavan, Century Bazaar, Prabhadevi",19.01,72.82,Mist,29.4,25.314823150634766,90.73957252502441
+4,7,Bandra West - Chapel road,"Reclamation, Chapel Road, Near Lilavati Hospital",19.05,72.83,Mist,29.4,18.81098747253418,109.5505599975586
+5,3,Santacruz West,"Grd Flr Red Chillies Entertainment Bldg, Jct of 15th Rd and Ram Krishna MissionRd",19.08,72.83,Mist,29.4,18.429597854614258,127.98015785217285
+6,5,Andheri West - Four Bunglows,"Kokilaben Dhirubhai Ambani Hospital, Four Bunglows, Andheri (West)",19.13,72.82,Mist,29.4,31.023834228515625,159.00399208068848
+7,8,Andheri West - Infiniti Mall,"Ground Floor, Infiniti Mall, New Link Road, Andheri (West)",19.14,72.83,Mist,29.4,9.449687957763672,168.45368003845215
+8,2,Malad West - Infiniti Mall,"Upper Ground Floor, Infiniti Mall, Link Road,  Malad (West)",19.18,72.83,Mist,29.4,22.82646942138672,191.28014945983887
+9,10,Thane West - Viviana Mall,"Ground Floor, Viviana Mall, Thane West, Opp Eastern Express Highway",19.21,72.97,Mist,29.4,71.67899322509766,262.9591426849365
+10,9,Ghatkopar West,"Gound Floor, R City Mall, Lal Bahadur Shastri Marg",19.1,72.92,Mist,29.4,45.299835205078125,308.25897789001465
