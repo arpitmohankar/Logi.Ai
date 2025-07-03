@@ -1,5 +1,6 @@
 const { googleMapsClient, GOOGLE_MAPS_API_KEY } = require('../config/googleMaps');
 
+
 // Convert address to coordinates
 exports.geocodeAddress = async (address) => {
   try {
@@ -29,10 +30,10 @@ exports.geocodeAddress = async (address) => {
       };
     }
   } catch (error) {
-    console.error('Geocoding error:', error);
+    console.error('Geocoding error:', error.response?.data || error);
     return {
       success: false,
-      error: error.message
+      error: error.response?.data?.error_message || error.message
     };
   }
 };
@@ -78,7 +79,7 @@ exports.getAddressSuggestions = async (input) => {
         input: input,
         key: GOOGLE_MAPS_API_KEY,
         types: 'address',
-        components: 'country:in' // Restrict to US for Walmart
+        components: 'country:in'
       }
     });
 

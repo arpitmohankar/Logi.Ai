@@ -1,4 +1,5 @@
 const { Client } = require('@googlemaps/google-maps-services-js');
+require('dotenv').config();
 
 // Initialize Google Maps client
 const googleMapsClient = new Client({});
