@@ -182,17 +182,19 @@ exports.getOptimizedRoute = async (req, res) => {
   try {
     const { deliveryIds, currentLocation, useTraffic } = req.body;
 
-    if (!currentLocation || !currentLocation.lat || !currentLocation.lng) {
+    if (!currentLocation || 
+        typeof currentLocation.lat !== 'number' || 
+        typeof currentLocation.lng !== 'number') {
       return res.status(400).json({
         success: false,
-        error: 'Current location is required with valid lat/lng'
+        error: 'Valid current location with lat/lng required'
       });
     }
 
-    if (!deliveryIds || deliveryIds.length === 0) {
+    if (!deliveryIds || !Array.isArray(deliveryIds) || deliveryIds.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No deliveries selected for optimization'
+        error: 'Delivery IDs array required'
       });
     }
 
@@ -224,13 +226,28 @@ exports.getOptimizedRoute = async (req, res) => {
       });
     }
 
+     // Log for debugging
+    console.log(`Optimizing ${validDeliveries.length} deliveries from location:`, currentLocation);
+
     // Optimize route
     let result;
-    if (useTraffic) {
-      result = await optimizeWithTraffic(validDeliveries, currentLocation);
-    } else {
-      result = await optimizeDeliveryRoute(validDeliveries, currentLocation);
+     try {
+      if (useTraffic) {
+        result = await optimizeWithTraffic(validDeliveries, currentLocation);
+      } else {
+        result = await optimizeDeliveryRoute(validDeliveries, currentLocation);
+      }
+    } catch (optimizationError) {
+      console.error('Optimization error:', optimizationError);
+      
+      // Try fallback optimization
+      result = await require('../utils/routeOptimizer').fallbackRouteOptimization(
+        validDeliveries, 
+        currentLocation
+      );
     }
+
+
 
     if (!result.success) {
       return res.status(400).json({

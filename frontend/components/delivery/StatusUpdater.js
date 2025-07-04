@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { 
   Package, 
   Truck, 
@@ -31,6 +31,7 @@ const StatusUpdater = ({
   const [showFailureDialog, setShowFailureDialog] = useState(false);
   const [failureReason, setFailureReason] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [lastUpdatedStatus, setLastUpdatedStatus] = useState(delivery.status);
 
   const statusActions = {
     'assigned': {
@@ -54,12 +55,24 @@ const StatusUpdater = ({
   };
 
   const handleStatusUpdate = async (newStatus) => {
+if (delivery.status === newStatus || lastUpdatedStatus === newStatus) {
+      toast.warning('Status is already updated');
+      return;
+    }
+    
+
     setIsUpdating(true);
     try {
       await onStatusUpdate(delivery._id, newStatus);
+      setLastUpdatedStatus(newStatus);
       toast.success(`Delivery marked as ${newStatus}`);
     } catch (error) {
-      toast.error('Failed to update status');
+      // Check if error is due to invalid transition
+      if (error.message?.includes('Cannot change status')) {
+        toast.error('Invalid status transition. Please refresh the page.');
+      } else {
+        toast.error('Failed to update status');
+      }
     } finally {
       setIsUpdating(false);
     }
@@ -83,6 +96,9 @@ const StatusUpdater = ({
     }
   };
 
+  useEffect(() => {
+    setLastUpdatedStatus(delivery.status);
+  }, [delivery.status]);
   const currentAction = statusActions[delivery.status];
 
   if (delivery.status === 'delivered' || delivery.status === 'failed') {
@@ -96,6 +112,7 @@ const StatusUpdater = ({
         </Badge>
       </div>
     );
+    
   }
 
   if (compact) {
@@ -120,6 +137,7 @@ const StatusUpdater = ({
         </div>
       </div>
     );
+    
   }
 
   return (

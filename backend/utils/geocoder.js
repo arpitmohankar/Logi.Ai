@@ -98,3 +98,97 @@ exports.getAddressSuggestions = async (input) => {
     };
   }
 };
+
+
+
+
+// const directGoogleMapsAPI = require('./directGoogleMapsAPI');
+
+// // Convert address to coordinates
+// exports.geocodeAddress = async (address) => {
+//   try {
+//     const data = await directGoogleMapsAPI.geocode(address);
+
+//     if (data.results && data.results.length > 0) {
+//       const location = data.results[0].geometry.location;
+//       const formattedAddress = data.results[0].formatted_address;
+      
+//       return {
+//         success: true,
+//         coordinates: {
+//           lat: location.lat,
+//           lng: location.lng
+//         },
+//         formattedAddress: formattedAddress
+//       };
+//     } else {
+//       return {
+//         success: false,
+//         error: 'Address not found'
+//       };
+//     }
+//   } catch (error) {
+//     console.error('Geocoding error:', error);
+//     return {
+//       success: false,
+//       error: error.message
+//     };
+//   }
+// };
+
+// // Get address suggestions for autocomplete
+// exports.getAddressSuggestions = async (input) => {
+//   try {
+//     const data = await directGoogleMapsAPI.placeAutocomplete(input);
+
+//     if (data.status === 'OK') {
+//       return {
+//         success: true,
+//         predictions: data.predictions.map(pred => ({
+//           description: pred.description,
+//           placeId: pred.place_id
+//         }))
+//       };
+//     } else {
+//       return {
+//         success: false,
+//         error: data.status
+//       };
+//     }
+//   } catch (error) {
+//     console.error('Autocomplete error:', error);
+//     return {
+//       success: false,
+//       error: error.message
+//     };
+//   }
+// };
+
+// // Calculate distance between two coordinates
+// exports.calculateDistance = async (origin, destination) => {
+//   try {
+//     const data = await directGoogleMapsAPI.distanceMatrix(
+//       `${origin.lat},${origin.lng}`,
+//       `${destination.lat},${destination.lng}`
+//     );
+
+//     if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
+//       return {
+//         success: true,
+//         distance: data.rows[0].elements[0].distance,
+//         duration: data.rows[0].elements[0].duration
+//       };
+//     } else {
+//       return {
+//         success: false,
+//         error: 'Could not calculate distance'
+//       };
+//     }
+//   } catch (error) {
+//     console.error('Distance calculation error:', error);
+//     return {
+//       success: false,
+//       error: error.message
+//     };
+//   }
+// };

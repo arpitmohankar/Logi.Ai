@@ -32,6 +32,7 @@ class ErrorBoundary extends Component {
     super(props);
     this.state = { hasError: false, error: null };
   }
+  
 
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
@@ -64,6 +65,7 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
+
 export default function DeliveryRoute() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -75,12 +77,64 @@ export default function DeliveryRoute() {
     refreshRoute,
     updateDeliveryStatus 
   } = useDeliveryStore();
-  const { location, watchPosition, isWatching } = useGeolocation();
+  const { location, watchPosition, isWatching,error: locationError,getCurrentPosition, } = useGeolocation();
   const { emit } = useSocketContext();
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [currentDeliveryIndex, setCurrentDeliveryIndex] = useState(0);
   const [showNavigation, setShowNavigation] = useState(false);
   const navigationIntervalRef = useRef(null);
+
+  // Add manual location fallback
+const [manualLocation, setManualLocation] = useState(null);
+const [showLocationDialog, setShowLocationDialog] = useState(false);
+
+// Use manual location if auto-location fails
+const effectiveLocation = location || manualLocation;
+useGeolocation({
+  enableHighAccuracy: true,
+  timeout: 10000,
+  maximumAge: 0
+});
+  
+
+
+// Add location permission request
+useEffect(() => {
+  const requestLocationPermission = async () => {
+    try {
+      const result = await navigator.permissions.query({ name: 'geolocation' });
+      
+      if (result.state === 'denied') {
+        toast.error('Location access denied. Please enable location in your browser settings.');
+        return;
+      }
+      
+      if (result.state === 'prompt') {
+        toast.info('Please allow location access for route optimization');
+      }
+      
+      // Start watching position
+      watchPosition();
+    } catch (error) {
+      console.error('Permission query failed:', error);
+      // Fallback - try to get position anyway
+      watchPosition();
+    }
+  };
+  
+  requestLocationPermission();
+}, []);
+
+// Handle location errors
+useEffect(() => {
+  if (locationError) {
+    toast.error(`Location error: ${locationError}`);
+    
+    // Provide manual location option
+    setShowManualLocation(true);
+  }
+}, [locationError]);
+
 
   // Fetch active deliveries
   useEffect(() => {
@@ -98,25 +152,42 @@ export default function DeliveryRoute() {
     };
   }, []);
 
-  // Optimize route when deliveries are loaded
-  useEffect(() => {
-  const optimizeInitialRoute = async () => {
-    const activeDeliveries = deliveries.filter(d => 
-      ['assigned', 'picked-up', 'in-transit'].includes(d.status)
-    );
+//   // Optimize route when deliveries are loaded
+//   useEffect(() => {
+//   const optimizeInitialRoute = async () => {
+//     const activeDeliveries = deliveries.filter(d => 
+//       ['assigned', 'picked-up', 'in-transit'].includes(d.status)
+//     );
     
-    if (activeDeliveries.length > 0 && location && !optimizedRoute) {
-      try {
-        await handleOptimizeRoute();
-      } catch (error) {
-        console.error('Initial route optimization failed:', error);
-        toast.error('Failed to optimize route. Using default order.');
-      }
-    }
-  };
+//     if (activeDeliveries.length > 0 && location && !optimizedRoute) {
+//       try {
+//         await handleOptimizeRoute();
+//       } catch (error) {
+//         console.error('Initial route optimization failed:', error);
+//         toast.error('Failed to optimize route. Using default order.');
+//       }
+//     }
+//   };
   
-  optimizeInitialRoute();
-}, [deliveries, location]);
+//   optimizeInitialRoute();
+// }, [deliveries, location]);
+// Update the optimization effect
+useEffect(() => {
+  const activeDeliveries = deliveries.filter(d => 
+    ['assigned', 'picked-up', 'in-transit'].includes(d.status)
+  );
+  
+  if (activeDeliveries.length > 0 && effectiveLocation && !optimizedRoute) {
+    handleOptimizeRoute();
+  }
+}, [deliveries, effectiveLocation]);
+
+// Add manual location setter
+const handleSetManualLocation = (lat, lng) => {
+  setManualLocation({ lat, lng });
+  setShowLocationDialog(false);
+  toast.success('Location set manually');
+};
 
   // Update location via socket
   useEffect(() => {

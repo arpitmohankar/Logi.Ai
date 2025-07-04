@@ -11,16 +11,23 @@ import LoadingSpinner from '../common/LoadingSpinner';
 const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
   const [directions, setDirections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchDirections();
+    if (currentLocation && currentLocation.lat && currentLocation.lng) {
+      fetchDirections();
+    } else {
+      setError('Current location not available');
+      setIsLoading(false);
+    }
   }, [delivery, currentLocation]);
 
   const fetchDirections = async () => {
+      setIsLoading(true);
+    setError(null);
     if (!currentLocation) return;
 
-    setIsLoading(true);
-    try {
+      try {
       const response = await deliveryAPI.getDirections({
         origin: currentLocation,
         destination: delivery.coordinates
@@ -28,17 +35,30 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
       
       if (response.data.success) {
         setDirections(response.data.data.directions);
+      } else {
+        setError('Unable to get directions');
       }
     } catch (error) {
       console.error('Failed to fetch directions:', error);
+      setError('Failed to fetch directions. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // const startNavigation = () => {
+  //   const address = encodeURIComponent(formatAddress(delivery.address));
+  //   window.open(`https://maps.google.com/maps?daddr=${address}`, '_blank');
+  // };
   const startNavigation = () => {
-    const address = encodeURIComponent(formatAddress(delivery.address));
-    window.open(`https://maps.google.com/maps?daddr=${address}`, '_blank');
+    if (!delivery.coordinates || !delivery.coordinates.lat || !delivery.coordinates.lng) {
+      toast.error('Invalid delivery coordinates');
+      return;
+    }
+    
+    const destination = `${delivery.coordinates.lat},${delivery.coordinates.lng}`;
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    window.open(mapsUrl, '_blank');
   };
 
   return (

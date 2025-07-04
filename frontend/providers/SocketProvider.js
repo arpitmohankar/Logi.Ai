@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useContext, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { getAuthToken } from '../utils/auth';
@@ -10,7 +11,7 @@ export const SocketProvider = ({ children }) => {
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (user) {
+    if (user && user._id) {
       const token = getAuthToken();
       const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
 
@@ -24,7 +25,7 @@ export const SocketProvider = ({ children }) => {
       });
 
       // Join user-specific room
-      if (user.role === 'delivery') {
+      if (user.role === 'delivery' && user._id) {
         socketRef.current.emit('delivery-boy-join', user._id);
       }
 
@@ -49,7 +50,7 @@ export const SocketProvider = ({ children }) => {
         }
       };
     }
-  }, [user]);
+  }, [user?._id]);
 
   const emit = (event, data) => {
     if (socketRef.current) {
