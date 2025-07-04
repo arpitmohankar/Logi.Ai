@@ -8,8 +8,20 @@ module.exports = (io) => {
 
     // Delivery boy joins their room
     socket.on('delivery-boy-join', async (userId) => {
+      if (!userId) {
+        console.error('Delivery boy join attempted with null userId');
+        socket.emit('error', { message: 'User ID required' });
+        return;
+      }
+      
       socket.join(`delivery-${userId}`);
       console.log(`Delivery boy ${userId} joined their room`);
+      
+      // Send confirmation
+      socket.emit('join-success', { 
+        room: `delivery-${userId}`,
+        message: 'Successfully joined delivery room' 
+      });
     });
 
     // Customer joins tracking room

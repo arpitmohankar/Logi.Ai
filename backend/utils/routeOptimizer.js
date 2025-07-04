@@ -1,184 +1,176 @@
 const { googleMapsClient, GOOGLE_MAPS_API_KEY } = require('../config/googleMaps');
 const axios = require('axios');
-
-// Google Route Optimization API endpoint
-const ROUTE_OPTIMIZATION_API = 'https://routeoptimization.googleapis.com/v1/projects/:projectId/locations/:location:optimizeRoutes';
-
+const { optimizeRouteWithML } = require('./mlRouteOptimizer');
 /**
- * Optimize route for multiple delivery stops
- * This is the core feature - real-time route optimization
+ * Optimize route for multiple delivery stops using Directions API
  */
 exports.optimizeDeliveryRoute = async (deliveries, startLocation, options = {}) => {
   try {
-    // Build shipments array for the API
-    const shipments = deliveries.map((delivery, index) => ({
-      deliveries: [{
-        arrivalLocation: {
-          latitude: delivery.coordinates.lat,
-          longitude: delivery.coordinates.lng
-        },
-        duration: '300s', // 5 minutes per delivery
-        timeWindows: delivery.deliveryWindow ? [{
-          startTime: `${delivery.scheduledDate}T${delivery.deliveryWindow.start}:00Z`,
-          endTime: `${delivery.scheduledDate}T${delivery.deliveryWindow.end}:00Z`
-        }] : []
-      }],
-      loadDemands: {
-        weight: {
-          amount: Math.ceil(delivery.packageInfo.weight || 1)
+    // Validate inputs
+    if (!deliveries || deliveries.length === 0) {
+      return {
+        success: false,
+        error: 'No deliveries to optimize'
+      };
+    }
+
+    if (!startLocation || !startLocation.lat || !startLocation.lng) {
+      return {
+        success: false,
+        error: 'Invalid start location'
+      };
+    }
+
+    // For single delivery, no optimization needed
+    if (deliveries.length === 1) {
+      return {
+        success: true,
+        optimizedRoute: {
+          deliveryOrder: [{
+            delivery: deliveries[0],
+            visitIndex: 0,
+            isFirstDelivery: true,
+            isLastDelivery: true
+          }],
+          totalDistance: 0,
+          totalDuration: 0,
+          totalDeliveries: 1,
+          optimizationMethod: 'single-delivery',
+          optimizationTimestamp: new Date()
         }
-      },
-      label: `delivery_${delivery._id}`
-    }));
+      };
+    }
+ if (process.env.USE_ML_OPTIMIZATION === 'true') {
+      try {
+        return await optimizeRouteWithML(deliveries, startLocation);
+      } catch (mlError) {
+        console.warn('ML optimization failed, falling back to Google:', mlError);
+      }
+    }
+    
+    // Use Directions API for optimization
+    return await optimizeUsingDirectionsAPI(deliveries, startLocation);
+  } catch (error) {
+    console.error('Route optimization error:', error);
+    // Fallback to simple optimization
+    return fallbackRouteOptimization(deliveries, startLocation);
+  }
+};
 
-    // Build vehicle configuration
-    const vehicles = [{
-      startLocation: {
-        latitude: startLocation.lat,
-        longitude: startLocation.lng
-      },
-      endLocation: options.endLocation || {
-        latitude: startLocation.lat,
-        longitude: startLocation.lng
-      },
-      costPerKilometer: 1,
-      costPerHour: 60,
-      loadLimits: {
-        weight: {
-          maxLoad: 1000 // kg
-        }
-      },
-      routeDurationLimit: {
-        maxDuration: '28800s' // 8 hours
-      },
-      label: 'delivery_vehicle'
-    }];
+/**
+ * Optimize using Google Directions API
+ */
+async function optimizeUsingDirectionsAPI(deliveries, startLocation) {
+  try {
+    // Create waypoints from deliveries
+    const waypoints = deliveries
+      .filter(d => d.coordinates && d.coordinates.lat && d.coordinates.lng)
+      .map(d => `${d.coordinates.lat},${d.coordinates.lng}`)
+      .join('|');
 
-    // Build the optimization request
-    const request = {
-      model: {
-        shipments,
-        vehicles,
-        globalStartTime: new Date().toISOString(),
-        globalEndTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      },
-      searchMode: options.refreshRoute ? 'RETURN_FAST' : 'DEFAULT_SEARCH',
-      populatePolylines: true,
-      populateTransitionPolylines: true,
-      allowLargeDeadlineDespiteInterruptionRisk: true,
-      useGeodesicDistances: true,
-      geodesicMetersPerSecond: 10 // ~36 km/h average speed
-    };
+    if (!waypoints) {
+      throw new Error('No valid delivery coordinates');
+    }
 
-    // Call Google Route Optimization API
-    const endpoint = ROUTE_OPTIMIZATION_API
-      .replace(':projectId', process.env.GOOGLE_PROJECT_ID)
-      .replace(':location', 'global');
-
-    const response = await axios.post(endpoint, request, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
-        'X-Goog-FieldMask': 'routes.visits,routes.transitions,routes.routePolyline,routes.metrics'
+    const response = await googleMapsClient.directions({
+      params: {
+        origin: `${startLocation.lat},${startLocation.lng}`,
+        destination: `${startLocation.lat},${startLocation.lng}`, // Return to start
+        waypoints: `optimize:true|${waypoints}`,
+        key: GOOGLE_MAPS_API_KEY,
+        mode: 'driving',
+        departure_time: 'now'
       }
     });
 
-    // Process the optimized route
-    const optimizedRoute = response.data.routes[0];
-    
-    if (!optimizedRoute) {
-      throw new Error('No optimized route found');
+    if (!response.data || response.data.status !== 'OK') {
+      throw new Error(`Directions API error: ${response.data?.status || 'Unknown error'}`);
     }
 
-    // Extract the delivery order and route details
-    const deliveryOrder = [];
+    if (!response.data.routes || response.data.routes.length === 0) {
+      throw new Error('No routes found');
+    }
+
+    const route = response.data.routes[0];
+    const optimizedOrder = route.waypoint_order || [];
+    
+    // Create delivery order based on optimization
+    const deliveryOrder = optimizedOrder.map((originalIndex, newIndex) => ({
+      delivery: deliveries[originalIndex],
+      visitIndex: newIndex,
+      isFirstDelivery: newIndex === 0,
+      isLastDelivery: newIndex === optimizedOrder.length - 1
+    }));
+
+    // Calculate totals safely
     let totalDistance = 0;
     let totalDuration = 0;
     
-    // Process visits (deliveries)
-    optimizedRoute.visits.forEach((visit, index) => {
-      const deliveryId = visit.shipmentLabel.replace('delivery_', '');
-      const delivery = deliveries.find(d => d._id.toString() === deliveryId);
-      
-      if (delivery) {
-        deliveryOrder.push({
-          delivery,
-          visitIndex: index,
-          arrivalTime: visit.startTime,
-          departureTime: visit.endTime,
-          isFirstDelivery: index === 0,
-          isLastDelivery: index === optimizedRoute.visits.length - 1
-        });
-      }
-    });
-
-    // Process transitions (routes between stops)
-    const routeSegments = optimizedRoute.transitions.map((transition, index) => ({
-      startIndex: transition.startIndex,
-      endIndex: transition.endIndex,
-      distance: transition.distanceMeters,
-      duration: transition.duration,
-      polyline: transition.routePolyline?.encodedPolyline || null
-    }));
-
-    // Calculate totals from metrics
-    if (optimizedRoute.metrics) {
-      totalDistance = optimizedRoute.metrics.totalDistanceMeters || 0;
-      totalDuration = optimizedRoute.metrics.totalDuration || '0s';
+    if (route.legs && Array.isArray(route.legs)) {
+      route.legs.forEach(leg => {
+        if (leg.distance && leg.distance.value) {
+          totalDistance += leg.distance.value;
+        }
+        if (leg.duration && leg.duration.value) {
+          totalDuration += leg.duration.value;
+        }
+      });
     }
 
     return {
       success: true,
       optimizedRoute: {
         deliveryOrder,
-        routeSegments,
         totalDistance,
-        totalDuration: parseDuration(totalDuration),
+        totalDuration,
         totalDeliveries: deliveryOrder.length,
-        routePolyline: optimizedRoute.routePolyline?.encodedPolyline || null,
+        routePolyline: route.overview_polyline?.points || null,
+        optimizationMethod: 'directions-api',
         optimizationTimestamp: new Date()
       }
     };
-
   } catch (error) {
-    console.error('Route optimization error:', error.response?.data || error.message);
-    
-    // Fallback to simple distance-based optimization
-    if (error.response?.status === 403 || error.response?.status === 429) {
-      return fallbackRouteOptimization(deliveries, startLocation);
-    }
-    
-    return {
-      success: false,
-      error: error.response?.data?.error?.message || error.message
-    };
+    console.error('Directions API optimization error:', error);
+    throw error;
   }
-};
+}
 
 /**
  * Get turn-by-turn directions for a route
  */
 exports.getDirections = async (origin, destination, waypoints = []) => {
   try {
-    const waypointsString = waypoints
-      .map(wp => `${wp.lat},${wp.lng}`)
-      .join('|');
+    // Validate inputs
+    if (!origin || !destination) {
+      return {
+        success: false,
+        error: 'Invalid origin or destination'
+      };
+    }
 
-    const response = await googleMapsClient.directions({
-      params: {
-        origin: `${origin.lat},${origin.lng}`,
-        destination: `${destination.lat},${destination.lng}`,
-        waypoints: waypointsString,
-        optimize: true,
-        key: GOOGLE_MAPS_API_KEY,
-        alternatives: false,
-        mode: 'driving',
-        units: 'metric'
-      }
-    });
+    const params = {
+      origin: `${origin.lat},${origin.lng}`,
+      destination: `${destination.lat},${destination.lng}`,
+      key: GOOGLE_MAPS_API_KEY,
+      mode: 'driving',
+      units: 'metric'
+    };
 
-    if (response.data.status !== 'OK') {
-      throw new Error(`Directions API error: ${response.data.status}`);
+    if (waypoints && waypoints.length > 0) {
+      params.waypoints = waypoints
+        .filter(wp => wp && wp.lat && wp.lng)
+        .map(wp => `${wp.lat},${wp.lng}`)
+        .join('|');
+    }
+
+    const response = await googleMapsClient.directions({ params });
+
+    if (!response.data || response.data.status !== 'OK') {
+      throw new Error(`Directions API error: ${response.data?.status || 'Unknown error'}`);
+    }
+
+    if (!response.data.routes || response.data.routes.length === 0) {
+      throw new Error('No routes found');
     }
 
     const route = response.data.routes[0];
@@ -186,17 +178,19 @@ exports.getDirections = async (origin, destination, waypoints = []) => {
     return {
       success: true,
       directions: {
-        distance: route.legs.reduce((sum, leg) => sum + leg.distance.value, 0),
-        duration: route.legs.reduce((sum, leg) => sum + leg.duration.value, 0),
-        polyline: route.overview_polyline.points,
-        steps: route.legs.flatMap(leg => leg.steps.map(step => ({
-          instruction: step.html_instructions,
-          distance: step.distance,
-          duration: step.duration,
-          startLocation: step.start_location,
-          endLocation: step.end_location
-        }))),
-        waypointOrder: route.waypoint_order
+        distance: route.legs?.reduce((sum, leg) => sum + (leg.distance?.value || 0), 0) || 0,
+        duration: route.legs?.reduce((sum, leg) => sum + (leg.duration?.value || 0), 0) || 0,
+        polyline: route.overview_polyline?.points || '',
+        steps: route.legs?.flatMap(leg => 
+          leg.steps?.map(step => ({
+            instruction: step.html_instructions || '',
+            distance: step.distance || { text: '', value: 0 },
+            duration: step.duration || { text: '', value: 0 },
+            startLocation: step.start_location || { lat: 0, lng: 0 },
+            endLocation: step.end_location || { lat: 0, lng: 0 }
+          })) || []
+        ) || [],
+        waypointOrder: route.waypoint_order || []
       }
     };
   } catch (error) {
@@ -213,68 +207,56 @@ exports.getDirections = async (origin, destination, waypoints = []) => {
  */
 exports.optimizeWithTraffic = async (deliveries, currentLocation) => {
   try {
-    // Get traffic-aware distance matrix
-    const destinations = deliveries.map(d => `${d.coordinates.lat},${d.coordinates.lng}`);
-    
-    const response = await googleMapsClient.distancematrix({
-      params: {
-        origins: [`${currentLocation.lat},${currentLocation.lng}`, ...destinations],
-        destinations: destinations,
-        mode: 'driving',
-        departure_time: 'now', // This enables traffic consideration
-        traffic_model: 'best_guess',
-        key: GOOGLE_MAPS_API_KEY
-      }
-    });
-
-    if (response.data.status !== 'OK') {
-      throw new Error(`Distance Matrix API error: ${response.data.status}`);
-    }
-
-    // Build distance/duration matrix considering traffic
-    const matrix = response.data.rows.map(row => 
-      row.elements.map(element => ({
-        distance: element.distance?.value || Infinity,
-        duration: element.duration_in_traffic?.value || element.duration?.value || Infinity,
-        status: element.status
-      }))
-    );
-
-    // Use the matrix for optimization with current traffic conditions
-    const optimizedIndices = greedyTSP(matrix, 0);
-    
-    // Map back to deliveries
-    const optimizedDeliveries = optimizedIndices
-      .slice(1) // Remove starting point
-      .map(index => deliveries[index - 1]);
-
-    return {
-      success: true,
-      trafficOptimizedRoute: {
-        deliveries: optimizedDeliveries,
-        estimatedDuration: calculateTotalDuration(matrix, optimizedIndices),
-        trafficConditions: 'real-time',
-        optimizedAt: new Date()
-      }
-    };
+    // Use the same optimization as regular route
+    return await exports.optimizeDeliveryRoute(deliveries, currentLocation);
   } catch (error) {
     console.error('Traffic optimization error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return fallbackRouteOptimization(deliveries, currentLocation);
   }
 };
+
+/**
+ * Refresh route - unique feature
+ */
+exports.refreshRoute = exports.optimizeWithTraffic;
 
 /**
  * Fallback route optimization using nearest neighbor algorithm
  */
 function fallbackRouteOptimization(deliveries, startLocation) {
   try {
+    if (!deliveries || deliveries.length === 0) {
+      return {
+        success: false,
+        error: 'No deliveries to optimize'
+      };
+    }
+
+    if (!startLocation || typeof startLocation.lat !== 'number' || typeof startLocation.lng !== 'number') {
+      return {
+        success: false,
+        error: 'Invalid start location'
+      };
+    }
+
+    // Filter deliveries with valid coordinates
+    const validDeliveries = deliveries.filter(d => 
+      d.coordinates && 
+      typeof d.coordinates.lat === 'number' && 
+      typeof d.coordinates.lng === 'number'
+    );
+
+    if (validDeliveries.length === 0) {
+      return {
+        success: false,
+        error: 'No deliveries with valid coordinates'
+      };
+    }
+
     // Simple nearest neighbor algorithm
-    const unvisited = [...deliveries];
+    const unvisited = [...validDeliveries];
     const route = [];
-    let currentLocation = startLocation;
+    let currentLocation = { ...startLocation };
     let totalDistance = 0;
 
     while (unvisited.length > 0) {
@@ -301,11 +283,16 @@ function fallbackRouteOptimization(deliveries, startLocation) {
       route.push({
         delivery: nextDelivery,
         visitIndex: route.length,
-        distanceFromPrevious: nearestDistance
+        distanceFromPrevious: nearestDistance,
+        isFirstDelivery: route.length === 0,
+        isLastDelivery: unvisited.length === 0
       });
 
       totalDistance += nearestDistance;
-      currentLocation = nextDelivery.coordinates;
+      currentLocation = {
+        lat: nextDelivery.coordinates.lat,
+        lng: nextDelivery.coordinates.lng
+      };
     }
 
     return {
@@ -313,50 +300,19 @@ function fallbackRouteOptimization(deliveries, startLocation) {
       optimizedRoute: {
         deliveryOrder: route,
         totalDistance: Math.round(totalDistance),
-        totalDuration: Math.round(totalDistance / 10), // Rough estimate: 10m/s
+        totalDuration: Math.round(totalDistance / 10), // Rough estimate
         totalDeliveries: route.length,
-        optimizationMethod: 'fallback',
+        optimizationMethod: 'fallback-nearest-neighbor',
         optimizationTimestamp: new Date()
       }
     };
   } catch (error) {
+    console.error('Fallback optimization error:', error);
     return {
       success: false,
-      error: 'Fallback optimization failed'
+      error: `Optimization failed: ${error.message}`
     };
   }
-}
-
-/**
- * Greedy Traveling Salesman Problem solver
- */
-function greedyTSP(distanceMatrix, startIndex) {
-  const n = distanceMatrix.length;
-  const visited = new Array(n).fill(false);
-  const path = [startIndex];
-  visited[startIndex] = true;
-  
-  let current = startIndex;
-  
-  for (let i = 1; i < n; i++) {
-    let nearest = -1;
-    let nearestDuration = Infinity;
-    
-    for (let j = 0; j < n; j++) {
-      if (!visited[j] && distanceMatrix[current][j].duration < nearestDuration) {
-        nearest = j;
-        nearestDuration = distanceMatrix[current][j].duration;
-      }
-    }
-    
-    if (nearest !== -1) {
-      path.push(nearest);
-      visited[nearest] = true;
-      current = nearest;
-    }
-  }
-  
-  return path;
 }
 
 /**
@@ -364,35 +320,323 @@ function greedyTSP(distanceMatrix, startIndex) {
  */
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000; // Earth radius in meters
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
   const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
 }
 
-/**
- * Parse duration string to seconds
- */
-function parseDuration(duration) {
-  if (typeof duration === 'number') return duration;
-  const match = duration.match(/(\d+)s/);
-  return match ? parseInt(match[1]) : 0;
-}
 
-/**
- * Calculate total duration from path
- */
-function calculateTotalDuration(matrix, path) {
-  let total = 0;
-  for (let i = 0; i < path.length - 1; i++) {
-    total += matrix[path[i]][path[i + 1]].duration;
-  }
-  return total;
-}
+
+
+
+// const directGoogleMapsAPI = require('./directGoogleMapsAPI');
+// const { optimizeRouteWithML } = require('./mlRouteOptimizer');
+
+// /**
+//  * Optimize route for multiple delivery stops
+//  */
+// exports.optimizeDeliveryRoute = async (deliveries, startLocation, options = {}) => {
+//   try {
+//     // Validate inputs
+//     if (!deliveries || deliveries.length === 0) {
+//       return {
+//         success: false,
+//         error: 'No deliveries to optimize'
+//       };
+//     }
+
+//     if (!startLocation || !startLocation.lat || !startLocation.lng) {
+//       return {
+//         success: false,
+//         error: 'Invalid start location'
+//       };
+//     }
+
+//     // For single delivery, no optimization needed
+//     if (deliveries.length === 1) {
+//       return {
+//         success: true,
+//         optimizedRoute: {
+//           deliveryOrder: [{
+//             delivery: deliveries[0],
+//             visitIndex: 0,
+//             isFirstDelivery: true,
+//             isLastDelivery: true
+//           }],
+//           totalDistance: 0,
+//           totalDuration: 0,
+//           totalDeliveries: 1,
+//           optimizationMethod: 'single-delivery',
+//           optimizationTimestamp: new Date()
+//         }
+//       };
+//     }
+
+//     // Try ML optimization first if enabled
+//     if (process.env.USE_ML_OPTIMIZATION === 'true') {
+//       try {
+//         return await optimizeRouteWithML(deliveries, startLocation);
+//       } catch (mlError) {
+//         console.warn('ML optimization failed, falling back to Google:', mlError);
+//       }
+//     }
+    
+//     // Use Direct API for optimization
+//     return await optimizeUsingDirectAPI(deliveries, startLocation);
+//   } catch (error) {
+//     console.error('Route optimization error:', error);
+//     // Fallback to simple optimization
+//     return fallbackRouteOptimization(deliveries, startLocation);
+//   }
+// };
+
+// /**
+//  * Optimize using Direct Google API calls
+//  */
+// async function optimizeUsingDirectAPI(deliveries, startLocation) {
+//   try {
+//     // Create waypoints string
+//     const waypointCoords = deliveries
+//       .filter(d => d.coordinates && d.coordinates.lat && d.coordinates.lng)
+//       .map(d => `${d.coordinates.lat},${d.coordinates.lng}`);
+
+//     if (waypointCoords.length === 0) {
+//       throw new Error('No valid delivery coordinates');
+//     }
+
+//     // Make direct API call
+//     const directionsData = await directGoogleMapsAPI.getDirections({
+//       origin: `${startLocation.lat},${startLocation.lng}`,
+//       destination: `${startLocation.lat},${startLocation.lng}`,
+//       waypoints: `optimize:true|${waypointCoords.join('|')}`,
+//       mode: 'driving',
+//       departure_time: 'now'
+//     });
+
+//     if (directionsData.status !== 'OK') {
+//       throw new Error(`Directions API error: ${directionsData.status}`);
+//     }
+
+//     if (!directionsData.routes || directionsData.routes.length === 0) {
+//       throw new Error('No routes found');
+//     }
+
+//     const route = directionsData.routes[0];
+//     const optimizedOrder = route.waypoint_order || [];
+    
+//     // Create delivery order based on optimization
+//     const deliveryOrder = optimizedOrder.map((originalIndex, newIndex) => ({
+//       delivery: deliveries[originalIndex],
+//       visitIndex: newIndex,
+//       isFirstDelivery: newIndex === 0,
+//       isLastDelivery: newIndex === optimizedOrder.length - 1
+//     }));
+
+//     // Calculate totals
+//     let totalDistance = 0;
+//     let totalDuration = 0;
+    
+//     if (route.legs && Array.isArray(route.legs)) {
+//       route.legs.forEach(leg => {
+//         if (leg.distance && leg.distance.value) {
+//           totalDistance += leg.distance.value;
+//         }
+//         if (leg.duration && leg.duration.value) {
+//           totalDuration += leg.duration.value;
+//         }
+//       });
+//     }
+
+//     return {
+//       success: true,
+//       optimizedRoute: {
+//         deliveryOrder,
+//         totalDistance,
+//         totalDuration,
+//         totalDeliveries: deliveryOrder.length,
+//         routePolyline: route.overview_polyline?.points || null,
+//         optimizationMethod: 'google-directions-api',
+//         optimizationTimestamp: new Date()
+//       }
+//     };
+//   } catch (error) {
+//     console.error('Direct API optimization error:', error);
+//     throw error;
+//   }
+// }
+
+// /**
+//  * Get turn-by-turn directions
+//  */
+// exports.getDirections = async (origin, destination, waypoints = []) => {
+//   try {
+//     const params = {
+//       origin: `${origin.lat},${origin.lng}`,
+//       destination: `${destination.lat},${destination.lng}`,
+//       mode: 'driving',
+//       units: 'metric'
+//     };
+
+//     if (waypoints && waypoints.length > 0) {
+//       params.waypoints = waypoints
+//         .filter(wp => wp && wp.lat && wp.lng)
+//         .map(wp => `${wp.lat},${wp.lng}`)
+//         .join('|');
+//     }
+
+//     const directionsData = await directGoogleMapsAPI.getDirections(params);
+
+//     if (directionsData.status !== 'OK') {
+//       throw new Error(`Directions API error: ${directionsData.status}`);
+//     }
+
+//     const route = directionsData.routes[0];
+    
+//     return {
+//       success: true,
+//       directions: {
+//         distance: route.legs?.reduce((sum, leg) => sum + (leg.distance?.value || 0), 0) || 0,
+//         duration: route.legs?.reduce((sum, leg) => sum + (leg.duration?.value || 0), 0) || 0,
+//         polyline: route.overview_polyline?.points || '',
+//         steps: route.legs?.flatMap(leg => 
+//           leg.steps?.map(step => ({
+//             instruction: step.html_instructions || '',
+//             distance: step.distance || { text: '', value: 0 },
+//             duration: step.duration || { text: '', value: 0 },
+//             startLocation: step.start_location || { lat: 0, lng: 0 },
+//             endLocation: step.end_location || { lat: 0, lng: 0 }
+//           })) || []
+//         ) || [],
+//         waypointOrder: route.waypoint_order || []
+//       }
+//     };
+//   } catch (error) {
+//     console.error('Directions error:', error);
+//     return {
+//       success: false,
+//       error: error.message
+//     };
+//   }
+// };
+
+// /**
+//  * Optimize with traffic
+//  */
+// exports.optimizeWithTraffic = async (deliveries, currentLocation) => {
+//   return exports.optimizeDeliveryRoute(deliveries, currentLocation, { useTraffic: true });
+// };
+
+// /**
+//  * Refresh route
+//  */
+// exports.refreshRoute = exports.optimizeWithTraffic;
+
+// /**
+//  * Fallback route optimization
+//  */
+// exports.fallbackRouteOptimization = fallbackRouteOptimization;
+
+// function fallbackRouteOptimization(deliveries, startLocation) {
+//   try {
+//     if (!deliveries || deliveries.length === 0) {
+//       return {
+//         success: false,
+//         error: 'No deliveries to optimize'
+//       };
+//     }
+
+//     // Simple nearest neighbor algorithm
+//     const validDeliveries = deliveries.filter(d => 
+//       d.coordinates && 
+//       typeof d.coordinates.lat === 'number' && 
+//       typeof d.coordinates.lng === 'number'
+//     );
+
+//     if (validDeliveries.length === 0) {
+//       return {
+//         success: false,
+//         error: 'No deliveries with valid coordinates'
+//       };
+//     }
+
+//     const unvisited = [...validDeliveries];
+//     const route = [];
+//     let currentLocation = { ...startLocation };
+//     let totalDistance = 0;
+
+//     while (unvisited.length > 0) {
+//       let nearestIndex = 0;
+//       let nearestDistance = Infinity;
+
+//       unvisited.forEach((delivery, index) => {
+//         const distance = haversineDistance(
+//           currentLocation.lat,
+//           currentLocation.lng,
+//           delivery.coordinates.lat,
+//           delivery.coordinates.lng
+//         );
+
+//         if (distance < nearestDistance) {
+//           nearestDistance = distance;
+//           nearestIndex = index;
+//         }
+//       });
+
+//       const nextDelivery = unvisited.splice(nearestIndex, 1)[0];
+//       route.push({
+//         delivery: nextDelivery,
+//         visitIndex: route.length,
+//         distanceFromPrevious: nearestDistance,
+//         isFirstDelivery: route.length === 0,
+//         isLastDelivery: unvisited.length === 0
+//       });
+
+//       totalDistance += nearestDistance;
+//       currentLocation = {
+//         lat: nextDelivery.coordinates.lat,
+//         lng: nextDelivery.coordinates.lng
+//       };
+//     }
+
+//     return {
+//       success: true,
+//       optimizedRoute: {
+//         deliveryOrder: route,
+//         totalDistance: Math.round(totalDistance),
+//         totalDuration: Math.round(totalDistance / 10),
+//         totalDeliveries: route.length,
+//         optimizationMethod: 'fallback-nearest-neighbor',
+//         optimizationTimestamp: new Date()
+//       }
+//     };
+//   } catch (error) {
+//     console.error('Fallback optimization error:', error);
+//     return {
+//       success: false,
+//       error: `Optimization failed: ${error.message}`
+//     };
+//   }
+// }
+
+// function haversineDistance(lat1, lon1, lat2, lon2) {
+//   const R = 6371000;
+//   const φ1 = (lat1 * Math.PI) / 180;
+//   const φ2 = (lat2 * Math.PI) / 180;
+//   const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+//   const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+//   const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+//     Math.cos(φ1) * Math.cos(φ2) *
+//     Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+//   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+//   return R * c;
+// }

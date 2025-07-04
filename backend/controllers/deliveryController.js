@@ -5,6 +5,119 @@ const { optimizeDeliveryRoute, optimizeWithTraffic, getDirections } = require('.
 // @desc    Get assigned deliveries for delivery boy
 // @route   GET /api/delivery/my-deliveries
 // @access  Private/Delivery
+// exports.getMyDeliveries = async (req, res) => {
+//   try {
+//     const { status, date } = req.query;
+    
+//     // Build query
+//     const query = { assignedTo: req.user._id };
+    
+//     if (status) {
+//       query.status = status;
+//     } else {
+//       // Default: show active deliveries
+//       query.status = { $in: ['assigned', 'picked-up', 'in-transit'] };
+//     }
+    
+//     if (date) {
+//       const startDate = new Date(date);
+//       const endDate = new Date(date);
+//       endDate.setDate(endDate.getDate() + 1);
+      
+//       query.scheduledDate = {
+//         $gte: startDate,
+//         $lt: endDate
+//       };
+//     }
+
+//     const deliveries = await Delivery.find(query)
+//       .sort({ priority: -1, scheduledDate: 1 });
+
+//     res.status(200).json({
+//       success: true,
+//       count: deliveries.length,
+//       data: deliveries
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       error: error.message
+//     });
+//   }
+// };
+
+// // @desc    Get optimized route for deliveries
+// // @route   POST /api/delivery/optimize-route
+// // @access  Private/Delivery
+// exports.getOptimizedRoute = async (req, res) => {
+//   try {
+//     const { deliveryIds, currentLocation, useTraffic } = req.body;
+
+//     if (!currentLocation || !currentLocation.lat || !currentLocation.lng) {
+//       return res.status(400).json({
+//         success: false,
+//         error: 'Current location is required'
+//       });
+//     }
+
+//     // Get deliveries
+//     const deliveries = await Delivery.find({
+//       _id: { $in: deliveryIds },
+//       assignedTo: req.user._id,
+//       status: { $in: ['assigned', 'picked-up', 'in-transit'] }
+//     });
+
+//     if (deliveries.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         error: 'No valid deliveries found'
+//       });
+//     }
+
+//     // Optimize route
+//     let result;
+//     if (useTraffic) {
+//       result = await optimizeWithTraffic(deliveries, currentLocation);
+//     } else {
+//       result = await optimizeDeliveryRoute(deliveries, currentLocation);
+//     }
+
+//     if (!result.success) {
+//       return res.status(400).json({
+//         success: false,
+//         error: result.error
+//       });
+//     }
+
+//     // Update delivery order in database
+//     const optimizedRoute = result.optimizedRoute || result.trafficOptimizedRoute;
+//     if (optimizedRoute && optimizedRoute.deliveryOrder) {
+//       await Promise.all(
+//         optimizedRoute.deliveryOrder.map((item, index) =>
+//           Delivery.findByIdAndUpdate(item.delivery._id, {
+//             routeIndex: index,
+//             estimatedDeliveryTime: item.arrivalTime
+//           })
+//         )
+//       );
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: result
+//     });
+//   } catch (error) {
+//     console.error('Route optimization error:', error);
+//     res.status(500).json({
+//       success: false,
+//       error: error.message
+//     });
+//   }
+// };
+
+// @desc    Get assigned deliveries for delivery boy
+// @route   GET /api/delivery/my-deliveries
+// @access  Private/Delivery
 exports.getMyDeliveries = async (req, res) => {
   try {
     const { status, date } = req.query;
@@ -15,7 +128,7 @@ exports.getMyDeliveries = async (req, res) => {
     if (status) {
       query.status = status;
     } else {
-      // Default: show active deliveries
+      // Default: show active deliveries (include 'assigned' status)
       query.status = { $in: ['assigned', 'picked-up', 'in-transit'] };
     }
     
@@ -31,14 +144,30 @@ exports.getMyDeliveries = async (req, res) => {
     }
 
     const deliveries = await Delivery.find(query)
+      .populate('customerName customerPhone customerEmail address coordinates packageInfo')
       .sort({ priority: -1, scheduledDate: 1 });
+
+    // Ensure coordinates are properly formatted
+    const formattedDeliveries = deliveries.map(delivery => {
+      const deliveryObj = delivery.toObject();
+      
+      // Ensure coordinates exist and are numbers
+      if (!deliveryObj.coordinates || 
+          typeof deliveryObj.coordinates.lat !== 'number' || 
+          typeof deliveryObj.coordinates.lng !== 'number') {
+        console.warn(`Delivery ${deliveryObj._id} has invalid coordinates`);
+      }
+      
+      return deliveryObj;
+    });
 
     res.status(200).json({
       success: true,
-      count: deliveries.length,
-      data: deliveries
+      count: formattedDeliveries.length,
+      data: formattedDeliveries
     });
   } catch (error) {
+    console.error('Get deliveries error:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -53,14 +182,23 @@ exports.getOptimizedRoute = async (req, res) => {
   try {
     const { deliveryIds, currentLocation, useTraffic } = req.body;
 
-    if (!currentLocation || !currentLocation.lat || !currentLocation.lng) {
+    if (!currentLocation || 
+        typeof currentLocation.lat !== 'number' || 
+        typeof currentLocation.lng !== 'number') {
       return res.status(400).json({
         success: false,
-        error: 'Current location is required'
+        error: 'Valid current location with lat/lng required'
       });
     }
 
-    // Get deliveries
+    if (!deliveryIds || !Array.isArray(deliveryIds) || deliveryIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Delivery IDs array required'
+      });
+    }
+
+    // Get deliveries with full details
     const deliveries = await Delivery.find({
       _id: { $in: deliveryIds },
       assignedTo: req.user._id,
@@ -70,30 +208,58 @@ exports.getOptimizedRoute = async (req, res) => {
     if (deliveries.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'No valid deliveries found'
+        error: 'No valid deliveries found for optimization'
       });
     }
 
+    // Validate all deliveries have coordinates
+    const validDeliveries = deliveries.filter(d => 
+      d.coordinates && 
+      typeof d.coordinates.lat === 'number' && 
+      typeof d.coordinates.lng === 'number'
+    );
+
+    if (validDeliveries.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No deliveries with valid coordinates found'
+      });
+    }
+
+     // Log for debugging
+    console.log(`Optimizing ${validDeliveries.length} deliveries from location:`, currentLocation);
+
     // Optimize route
     let result;
-    if (useTraffic) {
-      result = await optimizeWithTraffic(deliveries, currentLocation);
-    } else {
-      result = await optimizeDeliveryRoute(deliveries, currentLocation);
+     try {
+      if (useTraffic) {
+        result = await optimizeWithTraffic(validDeliveries, currentLocation);
+      } else {
+        result = await optimizeDeliveryRoute(validDeliveries, currentLocation);
+      }
+    } catch (optimizationError) {
+      console.error('Optimization error:', optimizationError);
+      
+      // Try fallback optimization
+      result = await require('../utils/routeOptimizer').fallbackRouteOptimization(
+        validDeliveries, 
+        currentLocation
+      );
     }
+
+
 
     if (!result.success) {
       return res.status(400).json({
         success: false,
-        error: result.error
+        error: result.error || 'Route optimization failed'
       });
     }
 
-    // Update delivery order in database
-    const optimizedRoute = result.optimizedRoute || result.trafficOptimizedRoute;
-    if (optimizedRoute && optimizedRoute.deliveryOrder) {
+    // Update delivery order in database if optimization succeeded
+    if (result.optimizedRoute && result.optimizedRoute.deliveryOrder) {
       await Promise.all(
-        optimizedRoute.deliveryOrder.map((item, index) =>
+        result.optimizedRoute.deliveryOrder.map((item, index) =>
           Delivery.findByIdAndUpdate(item.delivery._id, {
             routeIndex: index,
             estimatedDeliveryTime: item.arrivalTime
@@ -114,6 +280,9 @@ exports.getOptimizedRoute = async (req, res) => {
     });
   }
 };
+
+
+
 
 // @desc    Refresh route with real-time optimization (UNIQUE FEATURE)
 // @route   POST /api/delivery/refresh-route
