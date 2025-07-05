@@ -125,15 +125,15 @@ useEffect(() => {
   requestLocationPermission();
 }, []);
 
-// Handle location errors
-useEffect(() => {
-  if (locationError) {
-    toast.error(`Location error: ${locationError}`);
+// // Handle location errors
+// useEffect(() => {
+//   if (locationError) {
+//     toast.error(`Location error: ${locationError}`);
     
-    // Provide manual location option
-    setShowManualLocation(true);
-  }
-}, [locationError]);
+//     // Provide manual location option
+//     setShowManualLocation(true);
+//   }
+// }, [locationError]);
 
 
   // Fetch active deliveries

@@ -61,79 +61,66 @@ exports.optimizeDeliveryRoute = async (deliveries, startLocation, options = {}) 
  * Optimize using Google Directions API
  */
 async function optimizeUsingDirectionsAPI(deliveries, startLocation) {
-  try {
-    // Create waypoints from deliveries
-    const waypoints = deliveries
-      .filter(d => d.coordinates && d.coordinates.lat && d.coordinates.lng)
-      .map(d => `${d.coordinates.lat},${d.coordinates.lng}`)
-      .join('|');
-
-    if (!waypoints) {
-      throw new Error('No valid delivery coordinates');
-    }
-
-    const response = await googleMapsClient.directions({
-      params: {
-        origin: `${startLocation.lat},${startLocation.lng}`,
-        destination: `${startLocation.lat},${startLocation.lng}`, // Return to start
-        waypoints: `optimize:true|${waypoints}`,
-        key: GOOGLE_MAPS_API_KEY,
-        mode: 'driving',
-        departure_time: 'now'
-      }
-    });
-
-    if (!response.data || response.data.status !== 'OK') {
-      throw new Error(`Directions API error: ${response.data?.status || 'Unknown error'}`);
-    }
-
-    if (!response.data.routes || response.data.routes.length === 0) {
-      throw new Error('No routes found');
-    }
-
-    const route = response.data.routes[0];
-    const optimizedOrder = route.waypoint_order || [];
-    
-    // Create delivery order based on optimization
-    const deliveryOrder = optimizedOrder.map((originalIndex, newIndex) => ({
-      delivery: deliveries[originalIndex],
-      visitIndex: newIndex,
-      isFirstDelivery: newIndex === 0,
-      isLastDelivery: newIndex === optimizedOrder.length - 1
+  // 1) Build an array of waypoint objects (or simple strings)
+  const waypoints = deliveries
+    .filter(d => d.coordinates && d.coordinates.lat != null && d.coordinates.lng != null)
+    .map(d => ({
+      location: { lat: d.coordinates.lat, lng: d.coordinates.lng },
+      stopover: true
     }));
 
-    // Calculate totals safely
-    let totalDistance = 0;
-    let totalDuration = 0;
-    
-    if (route.legs && Array.isArray(route.legs)) {
-      route.legs.forEach(leg => {
-        if (leg.distance && leg.distance.value) {
-          totalDistance += leg.distance.value;
-        }
-        if (leg.duration && leg.duration.value) {
-          totalDuration += leg.duration.value;
-        }
-      });
-    }
-
-    return {
-      success: true,
-      optimizedRoute: {
-        deliveryOrder,
-        totalDistance,
-        totalDuration,
-        totalDeliveries: deliveryOrder.length,
-        routePolyline: route.overview_polyline?.points || null,
-        optimizationMethod: 'directions-api',
-        optimizationTimestamp: new Date()
-      }
-    };
-  } catch (error) {
-    console.error('Directions API optimization error:', error);
-    throw error;
+  if (waypoints.length === 0) {
+    throw new Error('No valid delivery coordinates');
   }
+
+  // 2) Call the Directions API with an array + optimizeWaypoints flag
+  const response = await googleMapsClient.directions({
+    params: {
+      origin:      { lat: startLocation.lat, lng: startLocation.lng },
+      destination: { lat: startLocation.lat, lng: startLocation.lng }, // loop back
+      waypoints,                    // <-- array, not a string
+      optimizeWaypoints: true,      // tell Google to reorder
+      mode:       'driving',
+      departureTime: 'now',         // note camelCase
+      key:        GOOGLE_MAPS_API_KEY
+    },
+    timeout: 10000
+  });
+
+  // 3) Handle the response as before
+  if (response.data.status !== 'OK' || !response.data.routes?.length) {
+    throw new Error(`Directions API error: ${response.data.status}`);
+  }
+  const route = response.data.routes[0];
+  const order = route.waypoint_order || [];
+  const deliveryOrder = order.map((origIdx, visitIdx) => ({
+    delivery:      deliveries[origIdx],
+    visitIndex:    visitIdx,
+    isFirstDelivery: visitIdx === 0,
+    isLastDelivery:  visitIdx === order.length - 1
+  }));
+
+  // compute distance/duration…
+  let totalDistance = 0, totalDuration = 0;
+  (route.legs || []).forEach(leg => {
+    totalDistance += leg.distance?.value || 0;
+    totalDuration += leg.duration?.value || 0;
+  });
+
+  return {
+    success: true,
+    optimizedRoute: {
+      deliveryOrder,
+      totalDistance,
+      totalDuration,
+      totalDeliveries: deliveryOrder.length,
+      routePolyline:   route.overview_polyline?.points || null,
+      optimizationMethod: 'directions-api',
+      optimizationTimestamp: new Date()
+    }
+  };
 }
+
 
 /**
  * Get turn-by-turn directions for a route
