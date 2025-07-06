@@ -27,7 +27,7 @@ export const deliverySchema = z.object({
     street: z.string().min(1, 'Street address is required'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(2, 'State is required'),
-    zipCode: z.string().regex(/^[0-9]{5}$/, 'Invalid zip code'),
+    zipCode: z.string().regex(/^[0-9]{6}$/, 'Invalid zip code'),
   }),
   packageInfo: z.object({
     description: z.string().min(1, 'Package description is required'),

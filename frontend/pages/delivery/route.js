@@ -179,7 +179,7 @@ useEffect(() => {
   
   if (activeDeliveries.length > 0 && effectiveLocation && !optimizedRoute) {
     handleOptimizeRoute();
-  }
+   }
 }, [deliveries, effectiveLocation]);
 
 // Add manual location setter
@@ -209,44 +209,53 @@ const handleSetManualLocation = (lat, lng) => {
   );
 
   const handleOptimizeRoute = async () => {
-    if (!location) {
-      toast.error('Location not available');
-      return;
-    }
-
-    setIsOptimizing(true);
-    try {
-      const deliveryIds = activeDeliveries.map(d => d._id);
-      await optimizeRoute(deliveryIds, { lat: location.lat, lng: location.lng });
-      toast.success('Route optimized successfully');
-    } catch (error) {
-      toast.error('Failed to optimize route');
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
+  if (!effectiveLocation) {
+     toast.error('Location not available');
+     return;
+   }
+  setIsOptimizing(true);
+  try {
+     await optimizeRoute({
+      deliveries: activeDeliveries.map(d => d._id),
+      startLocation: {
+        lat: effectiveLocation.lat,
+        lng: effectiveLocation.lng
+      }
+    });
+    toast.success('Route optimized successfully');
+  } catch (err) {
+    toast.error('Failed to optimize route');
+  } finally {
+    setIsOptimizing(false);
+  }
+};
 
   const handleRefreshRoute = async () => {
-    if (!location || !optimizedRoute) return;
-
-    const remainingDeliveries = optimizedRoute.deliveryOrder
-      .slice(currentDeliveryIndex)
-      .map(item => item.delivery._id);
-
-    if (remainingDeliveries.length === 0) {
-      toast.info('No deliveries to optimize');
-      return;
-    }
-
-    const result = await refreshRoute(
-      { lat: location.lat, lng: location.lng },
-      remainingDeliveries
-    );
-
-    if (result.success) {
-      setCurrentDeliveryIndex(0);
-    }
-  };
+  if (!effectiveLocation || !optimizedRoute) return;
+  const remainingIds = optimizedRoute.deliveryOrder
+        .slice(currentDeliveryIndex)
+       .map(item => item.delivery._id);
+    if (!remainingIds.length) {
+     toast.info('No deliveries to optimize');
+     return;
+   }
+  setIsOptimizing(true);
+  try {
+    await refreshRoute({
+      deliveries: remainingIds,
+      startLocation: {
+        lat: effectiveLocation.lat,
+        lng: effectiveLocation.lng
+      }
+    });
+    setCurrentDeliveryIndex(0);
+    toast.success('Route refreshed successfully');
+  } catch (err) {
+    toast.error('Failed to refresh route');
+  } finally {
+    setIsOptimizing(false);
+  }
+};
 
   const handleStatusUpdate = async (deliveryId, status) => {
     const result = await updateDeliveryStatus(deliveryId, status);

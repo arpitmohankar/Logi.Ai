@@ -8,6 +8,8 @@ import { deliveryAPI } from '../../utils/api';
 import { formatAddress, formatDuration, formatDistanceMeters } from '../../utils/formatters';
 import LoadingSpinner from '../common/LoadingSpinner';
 
+import {toast} from 'react-hot-toast';
+const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
   const [directions, setDirections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +36,7 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
       });
       
       if (response.data.success) {
-        setDirections(response.data.data.directions);
+        setDirections(response.data.directions);
       } else {
         setError('Unable to get directions');
       }
@@ -57,7 +59,7 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
     }
     
     const destination = `${delivery.coordinates.lat},${delivery.coordinates.lng}`;
-    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    const mapsUrl = `https://www.google.com/maps/dir/?api=${googleMapsApiKey}&destination=${destination}&travelmode=driving`;
     window.open(mapsUrl, '_blank');
   };
 

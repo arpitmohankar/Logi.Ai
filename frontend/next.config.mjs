@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     domains: ['localhost', 'maps.googleapis.com'],
   },
@@ -11,9 +11,10 @@ const nextConfig = {
   // Add this configuration to allow your IP address
   allowedDevOrigins: [
     'localhost:3000',
-    '192.168.1.8:3000',
+    '192.168.175.8',
     '192.168.84.*:3000', // Allow all IPs in your subnet
-    '*.local:3000' // If you use .local domains
+    '*.local:3000',
+    '192.168.175.8:3000' // If you use .local domains
   ]
 };
 

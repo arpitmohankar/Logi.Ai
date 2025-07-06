@@ -30,7 +30,7 @@ exports.validateDelivery = [
   body('address.zipCode')
     .trim()
     .notEmpty().withMessage('Zip code is required')
-    .matches(/^[0-9]{5}$/).withMessage('Please provide a valid 5-digit zip code'),
+    .matches(/^[0-9]{6}$/).withMessage('Please provide a valid 6-digit zip code'),
   
   body('packageInfo.description')
     .trim()

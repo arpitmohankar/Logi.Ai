@@ -105,33 +105,33 @@ const useDeliveryStore = create(
     
     // Optimize route
     // Update the optimizeRoute action
-optimizeRoute: async (deliveryIds, currentLocation) => {
+optimizeRoute: async ({ deliveries, startLocation }) => {
   set({ isLoading: true });
   try {
     // Validate inputs
-    if (!deliveryIds || deliveryIds.length === 0) {
-      throw new Error('No deliveries to optimize');
-    }
+    if (!deliveries || deliveries.length === 0) {
+           throw new Error('No deliveries to optimize');
+         }
     
-    if (!currentLocation || !currentLocation.lat || !currentLocation.lng) {
-      throw new Error('Invalid current location');
-    }
+   if (!startLocation || startLocation.lat == null || startLocation.lng == null) {
+           throw new Error('Invalid current location');
+         }
     
     const response = await deliveryAPI.optimizeRoute({
-      deliveryIds,
-      currentLocation,
-      useTraffic: true
-    });
+          deliveries,
+          startLocation,
+          useTraffic: true
+        });
     
     // Validate response
     if (!response.data.success) {
       throw new Error(response.data.error || 'Optimization failed');
     }
     
-    set({ 
-      optimizedRoute: response.data.data.optimizedRoute || response.data.data,
-      isLoading: false 
-    });
+   set({
+          optimizedRoute: response.data.data.optimizedRoute || response.data.data,
+          isLoading: false
+        });
     
     toast.success('Route optimized successfully');
     return { success: true, route: response.data.data };
@@ -144,12 +144,12 @@ optimizeRoute: async (deliveryIds, currentLocation) => {
 },
     
     // Refresh route (unique feature)
-    refreshRoute: async (currentLocation, remainingDeliveryIds) => {
+    refreshRoute: async ({ deliveries, startLocation }) => {
       set({ isLoading: true });
       try {
-        const response = await deliveryAPI.refreshRoute({
-          currentLocation,
-          remainingDeliveryIds
+         const response = await deliveryAPI.refreshRoute({
+          deliveries,
+          startLocation
         });
         
         set({ 
