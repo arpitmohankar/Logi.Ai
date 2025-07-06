@@ -117,7 +117,7 @@ export const trackingAPI = {
 
 export const utilsAPI = {
   autocompleteAddress: (input) => api.get('/utils/autocomplete', { params: { input } }),
-  geocodeAddress: (address) => api.post('/utils/geocode', { address }),
+  geocodeAddress: (placeId) => api.post('/utils/geocode', { placeId }),
 };
 
 export default api;

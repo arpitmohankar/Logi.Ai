@@ -8,7 +8,7 @@ const { validationResult } = require('express-validator');
 // @access  Private/Admin
 exports.createDelivery = async (req, res) => {
   try {
-    // Check validation errors
+    // 1) Validate request body
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -17,11 +17,12 @@ exports.createDelivery = async (req, res) => {
       });
     }
 
+    // 2) Extract fields from body
     const {
       customerName,
       customerPhone,
       customerEmail,
-      address,
+      address = {},           // { street, city, state, zipCode, fullAddress? }
       packageInfo,
       priority,
       scheduledDate,
@@ -29,53 +30,71 @@ exports.createDelivery = async (req, res) => {
       deliveryInstructions
     } = req.body;
 
-    // Create full address string for geocoding
-    const fullAddress = `${address.street}, ${address.city}, ${address.state} ${address.zipCode}`;
-    
-    // Geocode the address
-    const geocodeResult = await geocodeAddress(fullAddress);
-    
-    if (!geocodeResult.success) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid address. Please check and try again.'
-      });
+    // 3) Determine final coordinates
+    //    a) use provided coords if available
+    let finalCoords = req.body.coordinates;
+    let formattedAddress = address.fullAddress || '';
+
+    //    b) otherwise call geocoder
+    if (!finalCoords?.lat || !finalCoords?.lng) {
+      // Build a single-line address string
+      const addressString = [
+        address.street,
+        address.city,
+        address.state,
+        address.zipCode
+      ]
+      .filter(Boolean)
+      .join(', ');
+
+      // Call geocode util with an object
+      const geoResult = await geocodeAddress({ address: addressString });
+      if (!geoResult.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid address. Please check and try again.'
+        });
+      }
+
+      finalCoords     = geoResult.coordinates;
+      formattedAddress = geoResult.formattedAddress;
     }
 
-    // Create delivery
+    // 4) Create the delivery record
     const delivery = await Delivery.create({
       customerName,
       customerPhone,
       customerEmail,
       address: {
         ...address,
-        fullAddress: geocodeResult.formattedAddress
+        fullAddress: formattedAddress
       },
-      coordinates: geocodeResult.coordinates,
+      coordinates: finalCoords,
       packageInfo,
-      priority: priority || 'medium',
+      priority:      priority || 'medium',
       scheduledDate,
       deliveryWindow,
       deliveryInstructions,
-      createdBy: req.user._id
+      createdBy:     req.user._id
     });
 
-    // Emit new delivery event
+    // 5) Emit real-time notification
     const io = req.app.get('io');
     io.emit('new-delivery', {
-      delivery: delivery,
+      delivery,
       message: 'New delivery added'
     });
 
+    // 6) Return success
     res.status(201).json({
       success: true,
-      data: delivery
+      data:    delivery
     });
   } catch (error) {
     console.error('Create delivery error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error:   error.message
     });
   }
 };

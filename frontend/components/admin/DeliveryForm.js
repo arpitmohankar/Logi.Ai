@@ -18,6 +18,8 @@ import {
 import { deliverySchema } from '../../lib/validators';
 import { utilsAPI } from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import MapWrapper from '../common/MapWrapper';
+
 
 const DeliveryForm = ({ 
   initialData = null, 
@@ -28,6 +30,9 @@ const DeliveryForm = ({
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+   const [pickedPos, setPickedPos]           = useState(null);
+   
 
   const {
     register,
@@ -50,47 +55,69 @@ const DeliveryForm = ({
   const streetValue = watch('address.street');
 
   // Address autocomplete
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (streetValue && streetValue.length > 3) {
-        setIsLoadingSuggestions(true);
-        try {
-          const response = await utilsAPI.autocompleteAddress(streetValue);
-          if (response.data.success) {
-            setAddressSuggestions(response.data.data);
-            setShowSuggestions(true);
-          }
-        } catch (error) {
-          console.error('Address autocomplete error:', error);
-        } finally {
-          setIsLoadingSuggestions(false);
-        }
-      } else {
-        setAddressSuggestions([]);
-        setShowSuggestions(false);
+useEffect(() => {
+  const timer = setTimeout(async () => {
+    if (streetValue?.length > 3) {
+      setIsLoadingSuggestions(true);
+      try {
+        const response = await utilsAPI.autocompleteAddress(streetValue);
+        if (response.data.success) {
+        // BACKEND returns { success:true, data:[{description, place_id or placeId}] }
+        const raw = response.data.data || [];
+        const preds = raw.map(item => ({
+          description: item.description,
+          // normalize whichever key your API returned
+          placeId:      item.placeId ?? item.place_id
+        }));
+        setAddressSuggestions(preds);
+        setShowSuggestions(true);
       }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [streetValue]);
-
-  const handleAddressSelect = (suggestion) => {
-    // Parse the address components from the suggestion
-    const parts = suggestion.description.split(',');
-    if (parts.length >= 3) {
-      setValue('address.street', parts[0].trim());
-      setValue('address.city', parts[1].trim());
-      
-      // Extract state and zip from last part
-      const stateZip = parts[parts.length - 1].trim();
-      const stateMatch = stateZip.match(/([A-Z]{2})\s+(\d{5})/);
-      if (stateMatch) {
-        setValue('address.state', stateMatch[1]);
-        setValue('address.zipCode', stateMatch[2]);
+      } catch (err) {
+        console.error('Autocomplete error:', err);
+      } finally {
+        setIsLoadingSuggestions(false);
       }
+    } else {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
     }
-    setShowSuggestions(false);
-  };
+  }, 300);
+  return () => clearTimeout(timer);
+}, [streetValue]);
+
+  const handleAddressSelect = async (suggestion) => {
+  // 1) Fill the text field
+  setValue('address.street', suggestion.description, { shouldValidate: true });
+  setShowSuggestions(false);
+
+  // 2) Geocode to get precise lat/lng
+  try {
+    const geoRes = await utilsAPI.geocodeAddress(suggestion.placeId);
+
+    if (geoRes.data.success) {
+      const { coordinates, address } = geoRes.data.data;
+      // fill hidden lat/lng
+      setValue('coordinates.lat', coordinates.lat);
+      setValue('coordinates.lng', coordinates.lng);
+
+      // fill city, state, ZIP
+      setValue('address.city',    address.city    || '');
+      setValue('address.state',   address.state   || '');
+      setValue('address.zipCode', address.postalCode || '');
+    } else {
+      console.warn('Geocode failed:', geoRes.data);
+      setValue('coordinates.lat', null);
+      setValue('coordinates.lng', null);
+      toast.error('Could not resolve address to coordinates');
+    }
+  } catch (err) {
+    console.error('Failed to geocode suggestion:', err);
+    // clear on error
+    setValue('coordinates.lat', null);
+    setValue('coordinates.lng', null);
+    toast.error('Error fetching location data');
+  }
+};
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -158,14 +185,14 @@ const DeliveryForm = ({
               <Input
                 id="street"
                 {...register('address.street')}
-                placeholder="123 Main St"
-                autoComplete="off"
+                placeholder="Gandhi Nagar, Bhandara"
+                autoComplete="on"
               />
               {isLoadingSuggestions && (
                 <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
               )}
             </div>
-            {showSuggestions && addressSuggestions.length > 0 && (
+            {showSuggestions && addressSuggestions?.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg">
                 {addressSuggestions.map((suggestion, index) => (
                   <button
@@ -190,7 +217,7 @@ const DeliveryForm = ({
               <Input
                 id="city"
                 {...register('address.city')}
-                placeholder="Dallas"
+                placeholder="Bhandara"
               />
               {errors.address?.city && (
                 <p className="text-sm text-destructive">{errors.address.city.message}</p>
@@ -202,8 +229,8 @@ const DeliveryForm = ({
               <Input
                 id="state"
                 {...register('address.state')}
-                placeholder="TX"
-                maxLength={2}
+                placeholder="BH"
+                maxLength={10}
               />
               {errors.address?.state && (
                 <p className="text-sm text-destructive">{errors.address.state.message}</p>
@@ -215,13 +242,57 @@ const DeliveryForm = ({
               <Input
                 id="zipCode"
                 {...register('address.zipCode')}
-                placeholder="75201"
-                maxLength={5}
+                placeholder="441904"
+                maxLength={6}
               />
               {errors.address?.zipCode && (
                 <p className="text-sm text-destructive">{errors.address.zipCode.message}</p>
               )}
             </div>
+
+                           {/* Street + autocomplete etc. */}
+
+          {/* Fallback: pick directly on map */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="mapPicker"
+              checked={showMapPicker}
+              onChange={() => setShowMapPicker(!showMapPicker)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="mapPicker">Pick location on map</Label>
+          </div>
+          {showMapPicker && (
+            <div className="h-64 my-2">
+              <MapWrapper
+                center={ pickedPos || undefined }
+                zoom={13}
+                markers={
+                  pickedPos ? [{ id: 'picked', lat: pickedPos.lat, lng: pickedPos.lng }] : []
+                }
+                onMapClick={(e) => {
+                  const lat = e.latLng.lat();
+                  const lng = e.latLng.lng();
+                  setPickedPos({ lat, lng });
+                  setValue('coordinates.lat', lat);
+                  setValue('coordinates.lng', lng);
+                }}
+                height="100%"
+                width="100%"
+              />
+              {pickedPos && (
+                <p className="mt-1 text-sm text-gray-700">
+                  Chosen: {pickedPos.lat.toFixed(5)}, {pickedPos.lng.toFixed(5)}
+                </p>
+              )}
+            </div>
+          )}
+
+           {/* City / State / ZIP hidden fields */}
+
+            <input type="hidden" {...register('coordinates.lat')} />
+            <input type="hidden" {...register('coordinates.lng')} />
           </div>
         </CardContent>
       </Card>

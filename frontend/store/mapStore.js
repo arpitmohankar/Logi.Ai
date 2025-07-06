@@ -4,11 +4,8 @@ import { devtools } from 'zustand/middleware';
 const useMapStore = create(
   devtools((set) => ({
     // Map preferences
-    mapCenter: {
-      lat: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LAT) || 32.7767,
-      lng: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LNG) || -96.7970
-    },
-    mapZoom: parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM) || 10,
+     mapCenter: null,
+   mapZoom:   12,
     
     // Map settings
     showTraffic: true,
@@ -75,16 +72,16 @@ const useMapStore = create(
     })),
     
     // Reset map
-    resetMap: () => set({
-      markers: [],
-      routePolyline: null,
-      selectedMarker: null,
-      mapCenter: {
-        lat: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LAT) || 32.7767,
-        lng: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LNG) || -96.7970
-      },
-      mapZoom: parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM) || 10
-    })
+    // resetMap: () => set({
+    //   markers: [],
+    //   routePolyline: null,
+    //   selectedMarker: null,
+    //   mapCenter: {
+    //     lat: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LAT) || 32.7767,
+    //     lng: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LNG) || -96.7970
+    //   },
+    //   mapZoom: parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM) || 10
+    // })
   }))
 );
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import MapWrapper from '../common/MapWrapper'; // Use the wrapper instead
 import { getMarkerColor } from '../../utils/mapHelpers';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { Polyline } from '@react-google-maps/api';
+import { decodePolyline } from '../../utils/mapHelpers';
 
 const RouteMap = ({ 
   deliveries, 
@@ -12,6 +14,7 @@ const RouteMap = ({
   const [markers, setMarkers] = useState([]);
   const [route, setRoute] = useState(null);
   const [isReady, setIsReady] = useState(0);
+  const [polylinePath, setPolylinePath] = useState(null);
 
   useEffect(() => {
     // Ensure we have data before setting up the map
@@ -20,6 +23,11 @@ const RouteMap = ({
       return;
     }
 
+   if (optimizedRoute?.routePolyline) {
+     setPolylinePath(decodePolyline(optimizedRoute.routePolyline));
+     setIsReady(true);
+     return;
+   }
     // Create markers from deliveries or optimized route
     if (optimizedRoute && optimizedRoute.deliveryOrder) {
       const deliveryMarkers = optimizedRoute.deliveryOrder
@@ -117,7 +125,19 @@ const RouteMap = ({
         showUserLocation={true}
         height="100%"
         width="100%"
-      />
+      >
+      {/* draw server-computed polyline if available */}
+    {polylinePath && (
+       <Polyline
+         path={polylinePath}
+         options={{
+           strokeColor:   '#0071CE',
+           strokeOpacity: 0.8,
+           strokeWeight:  4
+         }}
+       />
+     )}
+       </MapWrapper>
     </div>
   );
 };
