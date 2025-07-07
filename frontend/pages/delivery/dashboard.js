@@ -112,140 +112,140 @@ export default function DeliveryDashboard() {
         <div className="aurora-bg min-h-screen">
           <div className="aurora-bg-after2" />
           <div className="container mx-auto px-4 py-8 relative z-10">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-              <div>
-                <h1 className="text-3xl font-bold">Welcome back, {user?.name}!</h1>
-                <p className="text-muted-foreground">
-                  {isWatching ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                      Location tracking active
-                    </span>
-                  ) : (
-                    'Location tracking inactive'
-                  )}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => router.push('/delivery/route')}
-                  className="bg-walmart-blue hover:bg-walmart-blue/90"
-                >
-                  <Navigation className="h-4 w-4 mr-2" />
-                  Start Route
-                </Button>
-              </div>
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">Welcome back, {user?.name}!</h1>
+              <p className="text-muted-foreground">
+                {isWatching ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    Location tracking active
+                  </span>
+                ) : (
+                  'Location tracking inactive'
+                )}
+              </p>
             </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => router.push('/delivery/route')}
+                className="bg-walmart-blue hover:bg-walmart-blue/90"
+              >
+                <Navigation className="h-4 w-4 mr-2" />
+                Start Route
+              </Button>
+            </div>
+          </div>
 
-            {isLoading ? (
-              <LoadingSpinner size="large" className="py-20" />
-            ) : (
-              <>
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {statsCards.map((stat, index) => (
-                    <Card 
-                      key={index}
-                      className={stat.action ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}
-                      onClick={stat.action}
-                    >
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                          {stat.title}
-                        </CardTitle>
-                        <div className={`${stat.bgColor} p-2 rounded-full`}>
-                          <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{stat.value}</div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Today's Overview */}
-                <Card className="mb-8">
-                  <CardHeader>
-                    <CardTitle>Todays Overview</CardTitle>
-                    <CardDescription>
-                      {new Date().toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span>Progress</span>
-                          <span>{stats?.completedToday || 0} of {todaysDeliveries.length}</span>
-                        </div>
-                        <Progress 
-                          value={(stats?.completedToday / todaysDeliveries.length) * 100 || 0} 
-                          className="h-2"
-                        />
+          {isLoading ? (
+            <LoadingSpinner size="large" className="py-20" />
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {statsCards.map((stat, index) => (
+                  <Card 
+                    key={index}
+                    className={stat.action ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}
+                    onClick={stat.action}
+                  >
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        {stat.title}
+                      </CardTitle>
+                      <div className={`${stat.bgColor} p-2 rounded-full`}>
+                        <stat.icon className={`h-4 w-4 ${stat.color}`} />
                       </div>
-                      
-                      {activeDeliveries.length > 0 && (
-                        <div className="pt-4 border-t">
-                          <p className="text-sm text-muted-foreground mb-3">
-                            You have {activeDeliveries.length} active deliveries
-                          </p>
-                          <Button 
-                            className="w-full"
-                            variant="cobalt"
-                            onClick={() => router.push('/delivery/route')}
-                          >
-                            <MapPin className="h-4 w-4 mr-2" />
-                            View Route & Navigate
-                          </Button>
-                        </div>
-                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stat.value}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Today's Overview */}
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Todays Overview</CardTitle>
+                  <CardDescription>
+                    {new Date().toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>Progress</span>
+                        <span>{stats?.completedToday || 0} of {todaysDeliveries.length}</span>
+                      </div>
+                      <Progress 
+                        value={(stats?.completedToday / todaysDeliveries.length) * 100 || 0} 
+                        className="h-2"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
+                    
+                    {activeDeliveries.length > 0 && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          You have {activeDeliveries.length} active deliveries
+                        </p>
+                        <Button 
+                          className="w-full"
+                            variant="cobalt"
+                          onClick={() => router.push('/delivery/route')}
+                        >
+                          <MapPin className="h-4 w-4 mr-2" />
+                          View Route & Navigate
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Deliveries Tabs */}
-                <Tabs defaultValue="active" className="space-y-4">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="active">Active</TabsTrigger>
-                    <TabsTrigger value="today">Todays Queue</TabsTrigger>
-                    <TabsTrigger value="completed">Completed</TabsTrigger>
-                  </TabsList>
+              {/* Deliveries Tabs */}
+              <Tabs defaultValue="active" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="active">Active</TabsTrigger>
+                  <TabsTrigger value="today">Todays Queue</TabsTrigger>
+                  <TabsTrigger value="completed">Completed</TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="active">
-                    <DeliveryQueue
-                      deliveries={activeDeliveries}
-                      title="Active Deliveries"
-                      emptyMessage="No active deliveries"
-                      showActions
-                    />
-                  </TabsContent>
+                <TabsContent value="active">
+                  <DeliveryQueue
+                    deliveries={activeDeliveries}
+                    title="Active Deliveries"
+                    emptyMessage="No active deliveries"
+                    showActions
+                  />
+                </TabsContent>
 
-                  <TabsContent value="today">
-                    <DeliveryQueue
-                      deliveries={todaysDeliveries}
-                      title="Today's Deliveries"
-                      emptyMessage="No deliveries scheduled for today"
-                    />
-                  </TabsContent>
+                <TabsContent value="today">
+                  <DeliveryQueue
+                    deliveries={todaysDeliveries}
+                    title="Today's Deliveries"
+                    emptyMessage="No deliveries scheduled for today"
+                  />
+                </TabsContent>
 
-                  <TabsContent value="completed">
-                    <DeliveryQueue
-                      deliveries={deliveries.filter(d => d.status === 'delivered')}
-                      title="Completed Deliveries"
-                      emptyMessage="No completed deliveries"
-                      showCompletedTime
-                    />
-                  </TabsContent>
-                </Tabs>
-              </>
-            )}
+                <TabsContent value="completed">
+                  <DeliveryQueue
+                    deliveries={deliveries.filter(d => d.status === 'delivered')}
+                    title="Completed Deliveries"
+                    emptyMessage="No completed deliveries"
+                    showCompletedTime
+                  />
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
           </div>
         </div>
       </Layout>

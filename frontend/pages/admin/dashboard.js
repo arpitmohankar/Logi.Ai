@@ -100,163 +100,163 @@ export default function AdminDashboard() {
         <div className="aurora-bg min-h-screen">
           <div className="aurora-bg-after2" />
           <div className="container mx-auto px-4 py-8 relative z-10">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <div>
                 <h1 className="gt-super-like text-3xl font-bold text-blue-900">Dashboard</h1>
                 <p className="text-blue-700">
-                  Welcome back! Heres your delivery overview.
-                </p>
-              </div>
+                Welcome back! Heres your delivery overview.
+              </p>
             </div>
+          </div>
 
-            {isLoading ? (
-              <LoadingSpinner size="large" className="py-20" />
-            ) : (
-              <>
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  {statsCards.map((stat, index) => (
+          {isLoading ? (
+            <LoadingSpinner size="large" className="py-20" />
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {statsCards.map((stat, index) => (
                     <Card key={index} className="bg-white shadow-xl z-20">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-blue-900">
-                          {stat.title}
-                        </CardTitle>
-                        <div className={`${stat.bgColor} p-2 rounded-full`}>
-                          <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
+                        {stat.title}
+                      </CardTitle>
+                      <div className={`${stat.bgColor} p-2 rounded-full`}>
+                        <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
                         <div className="text-2xl font-bold text-blue-900">{stat.value}</div>
                         <p className="text-xs text-blue-700 mt-1">
-                          {stat.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        {stat.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
-                {/* Tabs Section */}
-                <Tabs defaultValue="overview" className="space-y-4">
-                  <TabsList>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="deliveries">Todays Deliveries</TabsTrigger>
-                    <TabsTrigger value="performance">Performance</TabsTrigger>
-                  </TabsList>
+              {/* Tabs Section */}
+              <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="deliveries">Todays Deliveries</TabsTrigger>
+                  <TabsTrigger value="performance">Performance</TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="overview" className="space-y-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Delivery Status Chart */}
+                <TabsContent value="overview" className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Delivery Status Chart */}
                       <Card className="bg-white shadow-xl z-20">
-                        <CardHeader>
+                      <CardHeader>
                           <CardTitle className="text-blue-900">Delivery Status Distribution</CardTitle>
                           <CardDescription className="text-blue-700">
-                            Current status of all deliveries
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={chartData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="name" />
-                              <YAxis />
-                              <Tooltip />
-                              <Bar dataKey="value" fill="#8884d8" />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
+                          Current status of all deliveries
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
 
-                      {/* Quick Actions */}
+                    {/* Quick Actions */}
                       <Card className="bg-white shadow-xl z-20">
-                        <CardHeader>
+                      <CardHeader>
                           <CardTitle className="text-blue-900">Quick Actions</CardTitle>
                           <CardDescription className="text-blue-700">
-                            Manage deliveries and assignments
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                          Manage deliveries and assignments
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                           <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
-                            <Package className="mr-2 h-4 w-4" />
-                            Create New Delivery
-                          </Button>
+                          <Package className="mr-2 h-4 w-4" />
+                          Create New Delivery
+                        </Button>
                           <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
-                            <Truck className="mr-2 h-4 w-4" />
-                            View All Deliveries
-                          </Button>
+                          <Truck className="mr-2 h-4 w-4" />
+                          View All Deliveries
+                        </Button>
                           <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
-                            <Clock className="mr-2 h-4 w-4" />
-                            Pending Assignments
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
+                          <Clock className="mr-2 h-4 w-4" />
+                          Pending Assignments
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
 
-                  <TabsContent value="deliveries">
-                    <DeliveryStats stats={stats} />
-                  </TabsContent>
+                <TabsContent value="deliveries">
+                  <DeliveryStats stats={stats} />
+                </TabsContent>
 
-                  <TabsContent value="performance">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <TabsContent value="performance">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <Card className="bg-white shadow-xl border border-slate-200">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            Completed Today
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-3xl font-bold text-green-600">
-                            {stats?.completedToday || 0}
-                          </div>
-                          <Progress 
-                            value={(stats?.completedToday / stats?.totalDeliveries) * 100 || 0} 
-                            className="mt-2"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card className="bg-white shadow-xl border border-slate-200">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-orange-600" />
-                            In Transit
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-3xl font-bold text-orange-600">
-                            {stats?.inTransitDeliveries || 0}
-                          </div>
-                          <Progress 
-                            value={(stats?.inTransitDeliveries / stats?.totalDeliveries) * 100 || 0} 
-                            className="mt-2"
-                          />
-                        </CardContent>
-                      </Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          Completed Today
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-green-600">
+                          {stats?.completedToday || 0}
+                        </div>
+                        <Progress 
+                          value={(stats?.completedToday / stats?.totalDeliveries) * 100 || 0} 
+                          className="mt-2"
+                        />
+                      </CardContent>
+                    </Card>
 
                       <Card className="bg-white shadow-xl border border-slate-200">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <XCircle className="h-5 w-5 text-red-600" />
-                            Failed Today
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-3xl font-bold text-red-600">
-                            {stats?.failedToday || 0}
-                          </div>
-                          <Progress 
-                            value={(stats?.failedToday / stats?.totalDeliveries) * 100 || 0} 
-                            className="mt-2"
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </>
-            )}
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="h-5 w-5 text-orange-600" />
+                          In Transit
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-orange-600">
+                          {stats?.inTransitDeliveries || 0}
+                        </div>
+                        <Progress 
+                          value={(stats?.inTransitDeliveries / stats?.totalDeliveries) * 100 || 0} 
+                          className="mt-2"
+                        />
+                      </CardContent>
+                    </Card>
+
+                      <Card className="bg-white shadow-xl border border-slate-200">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <XCircle className="h-5 w-5 text-red-600" />
+                          Failed Today
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-red-600">
+                          {stats?.failedToday || 0}
+                        </div>
+                        <Progress 
+                          value={(stats?.failedToday / stats?.totalDeliveries) * 100 || 0} 
+                          className="mt-2"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
           </div>
         </div>
       </Layout>
