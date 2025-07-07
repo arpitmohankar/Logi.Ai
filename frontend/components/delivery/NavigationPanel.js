@@ -120,6 +120,7 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
 
             <Button 
               className="w-full"
+              variant="cobalt"
               onClick={startNavigation}
             >
               <Navigation className="h-4 w-4 mr-2" />

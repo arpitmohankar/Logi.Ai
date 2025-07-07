@@ -48,16 +48,12 @@ const Header = () => {
   ] : [];
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="fixed top-0 z-50 w-full border-b bg-white shadow-md">
       <div className="container flex h-16 items-center px-4">
         {/* Logo */}
         <Link href={isAdmin ? '/admin/dashboard' : '/delivery/dashboard'} className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded bg-walmart-blue flex items-center justify-center">
-            <span className="text-white font-bold text-xl">W</span>
-          </div>
-          <span className="hidden font-bold sm:inline-block">
-            Walmart Delivery
-          </span>
+          <img src="/route.png" alt="Logi.AI Logo" className="h-8 w-8 rounded bg-white object-contain shadow" />
+          <span className="hidden font-bold sm:inline-block text-blue-900 text-xl">Logi.AI</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -81,6 +77,17 @@ const Header = () => {
 
         {/* Right side items */}
         <div className="flex items-center space-x-4">
+          {/* Refresh button for admin/delivery dashboards only */}
+          {(isAdmin || isDelivery) && (
+            <Button
+              variant="outline"
+              className="bg-white text-blue-900 border border-slate-200 shadow-md rounded-xl px-4 py-2 font-semibold flex items-center gap-2 hover:bg-slate-100"
+              onClick={() => window.location.reload()}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582M20 20v-5h-.581M5.582 9A7.974 7.974 0 014 12c0 4.418 3.582 8 8 8a7.974 7.974 0 006.418-3M18.418 15A7.974 7.974 0 0020 12c0-4.418-3.582-8-8-8a7.974 7.974 0 00-6.418 3" /></svg>
+              Refresh
+            </Button>
+          )}
           <ThemeToggle />
           
           {/* User Menu */}

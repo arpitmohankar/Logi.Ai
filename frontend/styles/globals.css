@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Playfair+Display:wght@700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -88,7 +89,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Nunito', Arial, Helvetica, sans-serif;
+}
+
+.gt-super-like {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
 }
 
 .dark {
@@ -320,5 +326,94 @@ body {
     bottom: 2rem;
     left: 2rem;
     right: auto;
+  }
+}
+
+/* Aurora background utility */
+.aurora-bg {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+.aurora-bg::before, .aurora-bg::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.aurora-bg::before {
+  width: 1800px;
+  height: 1200px;
+  top: -400px;
+  left: -600px;
+  background: linear-gradient(120deg, #FFFF66 0%, #60a5fa 60%, #3b82f6 100%);
+  animation: aurora-move1 16s ease-in-out infinite alternate;
+}
+.aurora-bg::after {
+  width: 1600px;
+  height: 1000px;
+  bottom: -300px;
+  right: -500px;
+  background: linear-gradient(120deg, #FFFF66 0%, #fde047 60%, #3b82f6 100%);
+  animation: aurora-move2 18s ease-in-out infinite alternate;
+}
+.aurora-bg-after2 {
+  position: absolute;
+  z-index: 0;
+  width: 1200px;
+  height: 800px;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -40%);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.7;
+  pointer-events: none;
+  background: radial-gradient(circle, #FFFF66 0%, #FFFF66 60%, transparent 100%);
+}
+@keyframes aurora-move1 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(40px) scale(1.1); }
+}
+@keyframes aurora-move2 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-30px) scale(1.05); }
+}
+
+.hero-title {
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), text-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+  will-change: transform, text-shadow;
+}
+.hero-title:hover {
+  transform: scale(1.06) rotate(-1deg);
+  text-shadow: 0 8px 32px rgba(60, 60, 120, 0.25), 0 2px 0 #fff, 0 0 24px #60a5fa;
+  animation: hero-shine 1.2s linear 1;
+}
+@keyframes hero-shine {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 0 #fff);
+  }
+  40% {
+    filter: brightness(1.2) drop-shadow(0 0 16px #fff9ae);
+  }
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0 #fff);
+  }
+}
+
+.blur-text-hero {
+  display: inline-block;
+  filter: blur(8px);
+  opacity: 0;
+  animation: blurTextHero 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.1s forwards;
+}
+@keyframes blurTextHero {
+  to {
+    filter: blur(0);
+    opacity: 1;
   }
 }

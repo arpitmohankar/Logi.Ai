@@ -177,11 +177,11 @@ if (delivery.status === newStatus || lastUpdatedStatus === newStatus) {
       {/* Additional Actions for Delivered Status */}
       {delivery.status === 'in-transit' && (
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="cobalt" size="sm">
             <Camera className="h-4 w-4 mr-2" />
             Photo Proof
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="cobalt" size="sm">
             <Signature className="h-4 w-4 mr-2" />
             Signature
           </Button>

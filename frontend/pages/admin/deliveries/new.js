@@ -49,36 +49,39 @@ export default function NewDeliveryPage() {
   return (
     <ProtectedRoute allowedRoles={['admin']}>
       <Layout title="New Delivery">
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Create New Delivery</h1>
-              <p className="text-muted-foreground">
-                Add a new delivery to the system
-              </p>
+        <div className="aurora-bg min-h-screen">
+          <div className="aurora-bg-after2" />
+          <div className="container max-w-4xl mx-auto px-4 py-8 relative z-10">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Create New Delivery</h1>
+                <p className="text-muted-foreground">
+                  Add a new delivery to the system
+                </p>
+              </div>
             </div>
+
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <DeliveryForm
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              submitLabel="Create Delivery"
+            />
           </div>
-
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <DeliveryForm
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            submitLabel="Create Delivery"
-          />
         </div>
       </Layout>
     </ProtectedRoute>

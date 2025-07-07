@@ -447,10 +447,10 @@ useEffect(() => {
 
       {/* Submit Button */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={() => window.history.back()}>
+        <Button type="button" variant="cobalt" onClick={() => window.history.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" variant="cobalt" disabled={isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
