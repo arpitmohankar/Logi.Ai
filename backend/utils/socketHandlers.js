@@ -58,8 +58,8 @@ module.exports = (io) => {
     // Delivery boy updates location
     socket.on('update-location', async (data) => {
       try {
-        const { userId, location, trackingCodes } = data;
-
+        const { userId, location, trackingCodes=[]  } = data;
+ if (!userId) return; 
         // Update user's current location in database
         await User.findByIdAndUpdate(userId, {
           currentLocation: {

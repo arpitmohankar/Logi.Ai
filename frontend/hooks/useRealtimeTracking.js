@@ -22,7 +22,7 @@ export const useRealtimeTracking = (trackingCode) => {
 
     // Set up real-time listeners
     const handleLocationUpdate = (data) => {
-      setTrackingData(prev => ({
+       setTrackingData(prev => prev && ({
         ...prev,
         deliveryBoy: {
           ...prev.deliveryBoy,

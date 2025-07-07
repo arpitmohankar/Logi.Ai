@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { trackingAPI } from '../../utils/api';
 import { formatTime, formatDuration, formatDistance } from '../../utils/formatters';
+import { cn } from '../../lib/utils';
 
 const EstimatedArrival = ({ 
   trackingCode, 

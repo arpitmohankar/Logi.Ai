@@ -27,7 +27,7 @@ router.post('/directions', getDirections);
 
 // Delivery operations
 router.put('/:id/status', updateDeliveryStatus);
-router.post('/:id/generate-tracking', generateTrackingCode);
+router.post('/:id/tracking-code', generateTrackingCode);
 router.post('/:id/proof', uploadDeliveryProof);
 
 module.exports = router;
