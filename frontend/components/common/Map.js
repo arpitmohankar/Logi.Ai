@@ -52,16 +52,17 @@ const Map = ({
   //   lat: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LAT) || 21.1458,
   //   lng: parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_CENTER_LNG) || 79.0882
   // };
-    const options = {
-      disableDefaultUI:  false,
-      zoomControl:       true,
-      mapTypeControl:    true,
-      streetViewControl: false,
-      fullscreenControl: true,
-      // merge in the controlOptions we set on onLoad
-      ...mapTypeCtrlOptions,
-      mapTypeId:         mapType || 'hybrid'
-    };
+const options = (() => {
+  const base = {
+    disableDefaultUI:  false,
+    zoomControl:       true,
+    streetViewControl: true,
+    fullscreenControl: true,
+    mapTypeId:         mapType || 'roadmap'
+  };
+  // when onLoad has injected control-options we merge them in
+  return { ...base, ...mapTypeCtrlOptions };
+})();
 useEffect(() => {
   if (map && window.google) {
     map.setMapTypeId(mapType);
@@ -176,7 +177,7 @@ useEffect(() => {
 
   // Custom marker icon
   const getMarkerIcon = (type) => {
-    if (!window.google) return null;
+ if (!window.google || !window.google.maps) return null;
     
     const iconMap = {
       delivery: '📦',
@@ -193,8 +194,8 @@ useEffect(() => {
           <text x="20" y="30" font-size="30" text-anchor="middle">${iconMap[type] || '📍'}</text>
         </svg>`
       )}`,
-      scaledSize: window.google ? new window.google.maps.Size(40, 40) : null,
-      anchor: window.google ? new window.google.maps.Point(20, 40) : null
+      scaledSize: new window.google.maps.Size(40, 40),
+      anchor:     new window.google.maps.Point(20, 40)
     };
   };
 

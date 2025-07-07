@@ -46,8 +46,8 @@ const trackingSessionSchema = new mongoose.Schema({
   }]
 });
 
-// Index for faster queries
-trackingSessionSchema.index({ trackingCode: 1 });
-trackingSessionSchema.index({ expiresAt: 1 });
+// // Index for faster queries
+// trackingSessionSchema.index({ trackingCode: 1 });
+// trackingSessionSchema.index({ expiresAt: 1 });
 
 module.exports = mongoose.model('TrackingSession', trackingSessionSchema);

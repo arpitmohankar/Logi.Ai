@@ -23,68 +23,67 @@ const RouteMap = ({
       return;
     }
 
-   if (optimizedRoute?.routePolyline) {
-     setPolylinePath(decodePolyline(optimizedRoute.routePolyline));
-     setIsReady(true);
-     return;
-   }
-    // Create markers from deliveries or optimized route
-    if (optimizedRoute && optimizedRoute.deliveryOrder) {
-      const deliveryMarkers = optimizedRoute.deliveryOrder
-        .filter(item => item.delivery && item.delivery.coordinates)
-        .map((item, index) => {
-          const delivery = item.delivery;
-          return {
-            id: delivery._id,
-            lat: delivery.coordinates.lat,
-            lng: delivery.coordinates.lng,
-            title: `${index + 1}. ${delivery.customerName}`,
-            type: index < currentDeliveryIndex ? 'completed' : 
-                  index === currentDeliveryIndex ? 'current' : 'pending',
-            info: {
-              address: delivery.address,
-              phone: delivery.customerPhone,
-              status: delivery.status
-            }
-          };
-        });
+    let deliveryMarkers = [];
 
-      setMarkers(deliveryMarkers);
+   if (optimizedRoute?.deliveryOrder?.length) {
+       deliveryMarkers = optimizedRoute.deliveryOrder
+         .filter(item => item.delivery && item.delivery.coordinates)
+         .map((item, index) => {
+           const d = item.delivery;
+           return {
+             id: d._id,
+             lat: d.coordinates.lat,
+             lng: d.coordinates.lng,
+             title: `${index + 1}. ${d.customerName}`,
+             type:
+               index < currentDeliveryIndex
+                 ? 'completed'
+                 : index === currentDeliveryIndex
+                 ? 'current'
+                 : 'pending',
+             info: {
+               address: d.address,
+               phone:   d.customerPhone,
+               status:  d.status
+             }
+           };
+         });
 
-      // Create route waypoints
-      if (currentLocation && deliveryMarkers.length > 0) {
-        const waypoints = [
-          { lat: currentLocation.lat, lng: currentLocation.lng },
-          ...deliveryMarkers.map(marker => ({
-            lat: marker.lat,
-            lng: marker.lng
-          }))
-        ];
-
-        setRoute({
-          waypoints,
-          optimize: false // Already optimized
-        });
-      }
     } else {
       // Fallback to showing all deliveries without optimization
-      const deliveryMarkers = deliveries
-        .filter(d => d.coordinates && d.coordinates.lat && d.coordinates.lng)
-        .map((delivery, index) => ({
-          id: delivery._id,
-          lat: delivery.coordinates.lat,
-          lng: delivery.coordinates.lng,
-          title: `${index + 1}. ${delivery.customerName}`,
+      deliveryMarkers = deliveries
+        .filter(d => d.coordinates?.lat != null && d.coordinates?.lng != null)
+        .map((d, i) => ({
+          id: d._id,
+          lat: d.coordinates.lat,
+          lng: d.coordinates.lng,
+          title: `${i + 1}. ${d.customerName}`,
           type: 'pending',
           info: {
-            address: delivery.address,
-            phone: delivery.customerPhone,
-            status: delivery.status
+            address: d.address,
+            phone:   d.customerPhone,
+            status:  d.status
           }
         }));
 
       setMarkers(deliveryMarkers);
     }
+
+     // ------------------------------------------------------------------
+   if (optimizedRoute?.routePolyline) {
+     // Server already supplied the overview polyline
+     setPolylinePath(decodePolyline(optimizedRoute.routePolyline));
+     setRoute(null);                 // no DirectionsService needed
+   } else if (currentLocation && deliveryMarkers.length > 0) {
+     // Build a way-point list for client-side DirectionsService draw
+     const waypoints = [
+       { lat: currentLocation.lat, lng: currentLocation.lng },
+       ...deliveryMarkers.map(m => ({ lat: m.lat, lng: m.lng }))
+     ];
+     setRoute({ waypoints, optimize: false });
+     setPolylinePath(null);
+   }
+
 
     setIsReady(true);
   }, [optimizedRoute, currentLocation, currentDeliveryIndex, deliveries]);
