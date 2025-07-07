@@ -1,4 +1,4 @@
-import { format, formatDistance, formatRelative, parseISO } from 'date-fns';
+import { format, formatRelative, parseISO } from 'date-fns';
 
 // Date formatting utilities
 export const formatDate = (date, formatString = 'PP') => {
@@ -6,11 +6,22 @@ export const formatDate = (date, formatString = 'PP') => {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
   return format(dateObj, formatString);
 };
+export const formatDistance = (meters, { unit = 'metric' } = {}) => {
+  if (meters == null || isNaN(meters)) return '-';
 
-export const formatTime = (date) => {
-  if (!date) return '';
-  const dateObj = typeof date === 'string' ? parseISO(date) : date;
-  return format(dateObj, 'p');
+  if (unit === 'imperial') {
+    const miles = meters / 1609.34;
+    if (miles < 0.1) return `${Math.round(miles * 5280)} ft`;
+    return `${miles.toFixed(1)} mi`;
+  }
+
+  // metric (default)
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+};
+export const formatTime = (dateLike) => {
+  const d = new Date(dateLike);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 export const formatDateTime = (date) => {
@@ -60,14 +71,11 @@ export const formatDistanceMeters = (meters) => {
 
 // Duration formatting
 export const formatDuration = (seconds) => {
-  if (seconds < 60) {
-    return `${Math.round(seconds)} sec`;
-  } else if (seconds < 3600) {
-    return `${Math.round(seconds / 60)} min`;
-  }
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
-  return `${hours}h ${minutes}m`;
+  if (seconds == null || isNaN(seconds)) return '-';
+  const mins  = Math.round(seconds / 60);
+  const hrs   = Math.floor(mins / 60);
+  const restM = mins % 60;
+  return hrs ? `${hrs} h ${restM} m` : `${mins} m`;
 };
 
 // Phone number formatting

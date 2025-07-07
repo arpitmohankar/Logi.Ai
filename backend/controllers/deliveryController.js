@@ -1,123 +1,8 @@
 const Delivery = require('../models/Delivery');
 const TrackingSession = require('../models/TrackingSession');
 const { optimizeDeliveryRoute, optimizeWithTraffic, getDirections } = require('../utils/routeOptimizer');
+const crypto = require('crypto');
 
-// @desc    Get assigned deliveries for delivery boy
-// @route   GET /api/delivery/my-deliveries
-// @access  Private/Delivery
-// exports.getMyDeliveries = async (req, res) => {
-//   try {
-//     const { status, date } = req.query;
-    
-//     // Build query
-//     const query = { assignedTo: req.user._id };
-    
-//     if (status) {
-//       query.status = status;
-//     } else {
-//       // Default: show active deliveries
-//       query.status = { $in: ['assigned', 'picked-up', 'in-transit'] };
-//     }
-    
-//     if (date) {
-//       const startDate = new Date(date);
-//       const endDate = new Date(date);
-//       endDate.setDate(endDate.getDate() + 1);
-      
-//       query.scheduledDate = {
-//         $gte: startDate,
-//         $lt: endDate
-//       };
-//     }
-
-//     const deliveries = await Delivery.find(query)
-//       .sort({ priority: -1, scheduledDate: 1 });
-
-//     res.status(200).json({
-//       success: true,
-//       count: deliveries.length,
-//       data: deliveries
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       error: error.message
-//     });
-//   }
-// };
-
-// // @desc    Get optimized route for deliveries
-// // @route   POST /api/delivery/optimize-route
-// // @access  Private/Delivery
-// exports.getOptimizedRoute = async (req, res) => {
-//   try {
-//     const { deliveryIds, currentLocation, useTraffic } = req.body;
-
-//     if (!currentLocation || !currentLocation.lat || !currentLocation.lng) {
-//       return res.status(400).json({
-//         success: false,
-//         error: 'Current location is required'
-//       });
-//     }
-
-//     // Get deliveries
-//     const deliveries = await Delivery.find({
-//       _id: { $in: deliveryIds },
-//       assignedTo: req.user._id,
-//       status: { $in: ['assigned', 'picked-up', 'in-transit'] }
-//     });
-
-//     if (deliveries.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         error: 'No valid deliveries found'
-//       });
-//     }
-
-//     // Optimize route
-//     let result;
-//     if (useTraffic) {
-//       result = await optimizeWithTraffic(deliveries, currentLocation);
-//     } else {
-//       result = await optimizeDeliveryRoute(deliveries, currentLocation);
-//     }
-
-//     if (!result.success) {
-//       return res.status(400).json({
-//         success: false,
-//         error: result.error
-//       });
-//     }
-
-//     // Update delivery order in database
-//     const optimizedRoute = result.optimizedRoute || result.trafficOptimizedRoute;
-//     if (optimizedRoute && optimizedRoute.deliveryOrder) {
-//       await Promise.all(
-//         optimizedRoute.deliveryOrder.map((item, index) =>
-//           Delivery.findByIdAndUpdate(item.delivery._id, {
-//             routeIndex: index,
-//             estimatedDeliveryTime: item.arrivalTime
-//           })
-//         )
-//       );
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: result
-//     });
-//   } catch (error) {
-//     console.error('Route optimization error:', error);
-//     res.status(500).json({
-//       success: false,
-//       error: error.message
-//     });
-//   }
-// };
-
-// @desc    Get assigned deliveries for delivery boy
-// @route   GET /api/delivery/my-deliveries
-// @access  Private/Delivery
 exports.getMyDeliveries = async (req, res) => {
   try {
     const { status, date } = req.query;
@@ -398,74 +283,35 @@ exports.updateDeliveryStatus = async (req, res) => {
 };
 
 exports.generateTrackingCode = async (req, res) => {
-  try {
-    const delivery = await Delivery.findOne({
-      _id: req.params.id,
-      assignedTo: req.user._id,
-      status: { $in: ['picked-up', 'in-transit'] }
-    });
-    if (!delivery) {
-      return res.status(404).json({
-        success: false,
-        error: 'Delivery not found or not eligible for tracking'
-      });
-    }
+  const { id } = req.params;               // delivery id
+  const delivery = await Delivery.findById(id);
+  if (!delivery) {
+    return res.status(404).json({ success: false, error: 'Delivery not found' });
+  }
 
-    // If an active session exists, return its code
-    let trackingSession = await TrackingSession.findOne({
-      deliveryId: delivery._id,
-      isActive: true
-    });
-    if (trackingSession) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          trackingCode: trackingSession.trackingCode,
-          expiresAt: trackingSession.expiresAt
-        }
-      });
-    }
+  // Only assigned driver may call
+  if (delivery.assignedTo.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
 
-    // Safe retry loop to handle duplicate-key collisions
-    let newSession;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = generateRandomCode(6);
-      try {
-        newSession = await TrackingSession.create({
-          trackingCode: code,
-          deliveryId: delivery._id,
-          deliveryBoyId: req.user._id
-        });
-        break;
-      } catch (err) {
-        if (err.code === 11000) {
-          // collision – retry
-          continue;
-        }
-        throw err;
-      }
-    }
-    if (!newSession) {
-      return res.status(500).json({
-        success: false,
-        error: 'Could not generate a unique tracking code'
-      });
-    }
+  // Re-use active session if it exists
+  let session = await TrackingSession.findOne({
+    deliveryId: id,
+    isActive: true,
+    expiresAt: { $gt: new Date() }
+  });
 
-    res.status(201).json({
-      success: true,
-      data: {
-        trackingCode: newSession.trackingCode,
-        expiresAt: newSession.expiresAt
-      }
-    });
-  } catch (error) {
-    console.error('Generate tracking code error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
+  if (!session) {
+    // Generate 6-char alphanumeric
+    const code = crypto.randomBytes(3).toString('hex').toUpperCase();
+    session = await TrackingSession.create({
+      trackingCode: code,
+      deliveryId:   id,
+      deliveryBoyId:req.user._id
     });
   }
+
+  res.json({ success: true, data: { trackingCode: session.trackingCode } });
 };
 
 // Helper function to generate random alphanumeric code
