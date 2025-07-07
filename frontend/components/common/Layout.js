@@ -16,10 +16,10 @@ const Layout = ({ children, title = '', className = '' }) => {
   return (
     <>
       <Head>
-        <title>{title ? `${title} | Walmart Delivery` : 'Walmart Delivery Optimization'}</title>
-        <meta name="description" content="Walmart delivery route optimization system" />
+        <title>{title ? `${title} | Logi.AI` : 'Logi.AI Route Optimization'}</title>
+        <meta name="description" content="Logi.AI delivery route optimization system" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/route.png" />
       </Head>
 
       <div className="min-h-screen bg-background">

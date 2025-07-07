@@ -29,7 +29,7 @@ export default function Home() {
     {
       icon: Truck,
       title: 'Dynamic Re-routing',
-      description: "Adapt on the on-the-spot dynamic re-routing. Real-time traffic and weather updates ensure your drivers take the fastest, most cost-effective paths, every time."
+      description: "Adapt on-the-spot dynamic re-routing. Real-time traffic and weather updates ensure your drivers take the fastest, most cost-effective paths, every time."
     },
     {
       icon: Package,
