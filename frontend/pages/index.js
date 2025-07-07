@@ -22,23 +22,23 @@ export default function Home() {
   const features = [
     {
       icon: MapPin,
-      title: 'Real-time Route Optimization',
-      description: 'AI-powered route planning that adapts to traffic conditions in real-time'
+      title: 'Multi Stop Route Optimization',
+      description: 'intelligently plans multi-stop routes using real-time traffic, weather, and distance data, cutting delivery times and slashing fuel costs for seamless B2B logistics'
     },
     {
       icon: Truck,
-      title: 'Live Tracking',
-      description: 'Track your deliveries in real-time with accurate location updates'
+      title: 'Dynamic Re-routing',
+      description: 'Adapt on the fly with Logi.AI’s dynamic re-routing. Real-time traffic and weather updates ensure your drivers take the fastest, most cost-effective paths, every time'
     },
     {
       icon: Package,
-      title: 'Smart Delivery Management',
-      description: 'Efficiently manage multiple deliveries with priority-based routing'
+      title: 'Live Tracking',
+      description: 'live tracking empowers multiple users—drivers, managers, and clients—with real-time delivery updates, ensuring transparency and coordination across your operations'
     },
     {
       icon: Users,
-      title: 'Multi-User Portals',
-      description: 'Dedicated portals for admins, delivery partners, and customers'
+      title: 'Smart Delivery Management',
+      description: 'priority-based routing optimizes schedules to meet critical deadlines, balancing urgency and efficiency to enhance customer satisfaction and streamline operations'
     }
   ];
 
@@ -50,9 +50,9 @@ export default function Home() {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded bg-walmart-blue flex items-center justify-center">
-                <span className="text-white font-bold text-xl">W</span>
+                <span className="text-white font-bold text-xl"><img src="" alt="" /></span>
               </div>
-              <span className="font-bold text-xl">Walmart Delivery</span>
+              <span className="font-bold text-xl">Logi.AI</span>
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
@@ -70,12 +70,11 @@ export default function Home() {
         <section className="py-20 px-4">
           <div className="container mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Optimized Delivery Routes,<br />
-              <span className="text-walmart-blue">Delivered Faster</span>
+              Optimize. Deliver. Save.<br />
+              <span className="text-walmart-blue"></span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Revolutionary route optimization system that reduces delivery time by 30% 
-              with real-time traffic adaptation
+              Slash delivery times by 25% with Logi.AI’s intelligent route optimization. Harness real-time traffic, weather, and multi-stop planning to save fuel, reduce costs, and deliver smarter.
             </p>
             
             {/* Tracking Form */}
