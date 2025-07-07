@@ -30,16 +30,17 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
     if (!currentLocation) return;
 
       try {
-      const response = await deliveryAPI.getDirections({
-        origin: currentLocation,
-        destination: delivery.coordinates
-      });
-      
-      if (response.data.success) {
-        setDirections(response.data.directions);
-      } else {
-        setError('Unable to get directions');
-      }
+       const response = await deliveryAPI.getDirections({
+    origin: currentLocation,
+    destination: delivery.coordinates
+  });
+
+  if (response.data.success) {
+    // ✅ correct unwrap
+    setDirections(response.data.data);          // { distance, duration, polyline, steps… }
+  } else {
+    setError('Unable to get directions');
+  }
     } catch (error) {
       console.error('Failed to fetch directions:', error);
       setError('Failed to fetch directions. Please try again.');
@@ -47,6 +48,11 @@ const NavigationPanel = ({ delivery, currentLocation, onClose }) => {
       setIsLoading(false);
     }
   };
+// useEffect(() => {
+//   if (directions?.polyline) {
+//     setMiniPath(decodePolyline(directions.polyline));
+//   }
+// }, [directions]);
 
   // const startNavigation = () => {
   //   const address = encodeURIComponent(formatAddress(delivery.address));

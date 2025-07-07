@@ -126,9 +126,11 @@ const DeliveryStatus = ({ status, delivery }) => {
         <div className="mt-6 p-4 bg-muted rounded-lg">
           <div className="flex items-start gap-3">
             {statusSteps[currentStepIndex].icon && (() => {
-  const Icon = statusSteps[currentStepIndex].icon;
-  return <Icon className="h-5 w-5 text-primary mt-0.5" />;
-})()}
+              const IconComp = statusSteps[currentStepIndex].icon;
+              return (
+                <IconComp className="h-5 w-5 text-primary mt-0.5" />
+              );
+            })()}
             <div>
               <p className="font-medium">Current Status: {statusSteps[currentStepIndex].label}</p>
               <p className="text-sm text-muted-foreground mt-1">
