@@ -63,7 +63,8 @@ app.get('/', (req, res) => {
     }
   });
 });
-
+const trackingRoutes = require('./routes/trackingRoutes');
+app.use('/api/tracking', trackingRoutes);
 // API Routes
 app.use('/api/auth', authRoutes);
 
