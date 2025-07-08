@@ -104,15 +104,15 @@ export const deliveryAPI = {
   // Delivery operations
   updateDeliveryStatus: (id, data) => api.put(`/delivery/${id}/status`, data),
   generateTrackingCode: (id) =>
-    axios.post(`/api/delivery/${id}/tracking-code`),
-   emailTrackingCode: (id) =>
-    axios.post(`/api/delivery/${id}/tracking-email`),
+    api.post(`/delivery/${id}/tracking-code`),
+  emailTrackingCode: (id) =>
+    api.post(`/delivery/${id}/tracking-email`),
   uploadDeliveryProof: (id, data) => api.post(`/delivery/${id}/proof`, data),
 };
 
 export const trackingAPI = {
- trackDelivery: (code)  => axios.get(`/api/tracking/${code}`),
-  getETA:        (code)  => axios.get(`/api/tracking/${code}/eta`),
+  trackDelivery: (code)  => api.get(`/tracking/${code}`),
+  getETA:        (code)  => api.get(`/tracking/${code}/eta`),
   getRealtimeLocation: (trackingCode) => api.get(`/tracking/${trackingCode}/location`),
   getLocationHistory: (trackingCode) => api.get(`/tracking/${trackingCode}/history`),
   submitFeedback: (trackingCode, data) => api.post(`/tracking/${trackingCode}/feedback`, data),
