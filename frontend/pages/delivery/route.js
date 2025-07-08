@@ -310,7 +310,7 @@ const handleSetManualLocation = (lat, lng) => {
       <Layout title="Active Route">
         <div className="h-screen flex flex-col">
           {/* Header */}
-          <div className="border-b bg-background p-4">
+          <div className="border-b bg-[#2243b6] p-4">
             <div className="container mx-auto flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button
@@ -318,21 +318,21 @@ const handleSetManualLocation = (lat, lng) => {
                   size="icon"
                   onClick={() => router.back()}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4 text-white" />
                 </Button>
                 <div>
-                  <h1 className="text-xl font-semibold">Active Route</h1>
-                  <p className="text-sm text-muted-foreground">
+                  <h1 className="text-xl font-semibold text-white">Active Route</h1>
+                  <p className="text-sm text-blue-100">
                     {activeDeliveries.length} deliveries • 
                     {optimizedRoute ? ` ${Math.round(optimizedRoute.totalDistance / 1000)} km` : ' Calculating...'}
                   </p>
                 </div>
               </div>
-              
               <RefreshButton
                 onRefresh={handleRefreshRoute}
                 isLoading={isOptimizing}
                 lastRefreshed={optimizedRoute?.optimizationTimestamp}
+                className="text-white"
               />
             </div>
           </div>

@@ -109,7 +109,9 @@ export default function DeliveryDashboard() {
   return (
     <ProtectedRoute allowedRoles={['delivery']}>
       <Layout title="Delivery Dashboard">
-        <div className="container mx-auto px-4 py-8">
+        <div className="aurora-bg min-h-screen">
+          <div className="aurora-bg-after2" />
+          <div className="container mx-auto px-4 py-8 relative z-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
@@ -126,14 +128,6 @@ export default function DeliveryDashboard() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={fetchDashboardData}
-                variant="outline"
-                size="sm"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
               <Button
                 onClick={() => router.push('/delivery/route')}
                 className="bg-walmart-blue hover:bg-walmart-blue/90"
@@ -204,6 +198,7 @@ export default function DeliveryDashboard() {
                         </p>
                         <Button 
                           className="w-full"
+                            variant="cobalt"
                           onClick={() => router.push('/delivery/route')}
                         >
                           <MapPin className="h-4 w-4 mr-2" />
@@ -251,6 +246,7 @@ export default function DeliveryDashboard() {
               </Tabs>
             </>
           )}
+          </div>
         </div>
       </Layout>
     </ProtectedRoute>

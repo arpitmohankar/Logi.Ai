@@ -13,7 +13,7 @@ const DeliveryStats = ({ stats }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card>
+      <Card className="bg-white shadow-xl border border-slate-200">
         <CardHeader>
           <CardTitle>Todays Summary</CardTitle>
           <CardDescription>Delivery performance for today</CardDescription>
@@ -36,7 +36,7 @@ const DeliveryStats = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-white shadow-xl border border-slate-200">
         <CardHeader>
           <CardTitle>Key Metrics</CardTitle>
           <CardDescription>Important performance indicators</CardDescription>

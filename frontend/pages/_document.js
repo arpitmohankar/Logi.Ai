@@ -4,6 +4,7 @@ export default function Document() {
   return (
     <Html lang="en" suppressHydrationWarning>
       <Head>
+        <link rel="icon" type="image/png" href="/frontend/public/route.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

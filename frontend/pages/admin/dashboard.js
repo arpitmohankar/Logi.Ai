@@ -97,23 +97,17 @@ export default function AdminDashboard() {
   return (
     <ProtectedRoute allowedRoles={['admin']}>
       <Layout title="Admin Dashboard">
-        <div className="container mx-auto px-4 py-8">
+        <div className="aurora-bg min-h-screen">
+          <div className="aurora-bg-after2" />
+          <div className="container mx-auto px-4 py-8 relative z-10">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold">Dashboard</h1>
-              <p className="text-muted-foreground">
+                <h1 className="gt-super-like text-3xl font-bold text-blue-900">Dashboard</h1>
+                <p className="text-blue-700">
                 Welcome back! Heres your delivery overview.
               </p>
             </div>
-            <Button
-              onClick={fetchDashboardData}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
           </div>
 
           {isLoading ? (
@@ -123,9 +117,9 @@ export default function AdminDashboard() {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {statsCards.map((stat, index) => (
-                  <Card key={index}>
+                    <Card key={index} className="bg-white shadow-xl z-20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-blue-900">
                         {stat.title}
                       </CardTitle>
                       <div className={`${stat.bgColor} p-2 rounded-full`}>
@@ -133,8 +127,8 @@ export default function AdminDashboard() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                        <div className="text-2xl font-bold text-blue-900">{stat.value}</div>
+                        <p className="text-xs text-blue-700 mt-1">
                         {stat.description}
                       </p>
                     </CardContent>
@@ -153,10 +147,10 @@ export default function AdminDashboard() {
                 <TabsContent value="overview" className="space-y-4">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Delivery Status Chart */}
-                    <Card>
+                      <Card className="bg-white shadow-xl z-20">
                       <CardHeader>
-                        <CardTitle>Delivery Status Distribution</CardTitle>
-                        <CardDescription>
+                          <CardTitle className="text-blue-900">Delivery Status Distribution</CardTitle>
+                          <CardDescription className="text-blue-700">
                           Current status of all deliveries
                         </CardDescription>
                       </CardHeader>
@@ -174,34 +168,23 @@ export default function AdminDashboard() {
                     </Card>
 
                     {/* Quick Actions */}
-                    <Card>
+                      <Card className="bg-white shadow-xl z-20">
                       <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                        <CardDescription>
+                          <CardTitle className="text-blue-900">Quick Actions</CardTitle>
+                          <CardDescription className="text-blue-700">
                           Manage deliveries and assignments
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <Button
-                          className="w-full justify-start"
-                          onClick={() => router.push('/admin/deliveries/new')}
-                        >
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
                           <Package className="mr-2 h-4 w-4" />
                           Create New Delivery
                         </Button>
-                        <Button
-                          className="w-full justify-start"
-                          variant="outline"
-                          onClick={() => router.push('/admin/deliveries')}
-                        >
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
                           <Truck className="mr-2 h-4 w-4" />
                           View All Deliveries
                         </Button>
-                        <Button
-                          className="w-full justify-start"
-                          variant="outline"
-                          onClick={() => router.push('/admin/deliveries?status=pending')}
-                        >
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
                           <Clock className="mr-2 h-4 w-4" />
                           Pending Assignments
                         </Button>
@@ -216,7 +199,7 @@ export default function AdminDashboard() {
 
                 <TabsContent value="performance">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card>
+                      <Card className="bg-white shadow-xl border border-slate-200">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <CheckCircle className="h-5 w-5 text-green-600" />
@@ -234,7 +217,7 @@ export default function AdminDashboard() {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                      <Card className="bg-white shadow-xl border border-slate-200">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Clock className="h-5 w-5 text-orange-600" />
@@ -252,7 +235,7 @@ export default function AdminDashboard() {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                      <Card className="bg-white shadow-xl border border-slate-200">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <XCircle className="h-5 w-5 text-red-600" />
@@ -274,6 +257,7 @@ export default function AdminDashboard() {
               </Tabs>
             </>
           )}
+          </div>
         </div>
       </Layout>
     </ProtectedRoute>

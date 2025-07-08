@@ -45,16 +45,18 @@ export default function AdminLogin() {
 
   return (
     <Layout title="Admin Login">
-      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <Card className="w-full max-w-md">
+      <div className="aurora-bg min-h-screen">
+        <div className="aurora-bg-after2" />
+        <div className="flex items-center justify-center px-4 py-12 min-h-screen z-10 relative">
+          <Card className="w-full max-w-md bg-white shadow-xl border-0 z-20">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <div className="h-12 w-12 rounded bg-walmart-blue flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">W</span>
+                <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-2xl">A</span>
+                </div>
               </div>
-            </div>
-            <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
-            <CardDescription className="text-center">
+              <CardTitle className="gt-super-like text-3xl text-center text-blue-900">Admin Login</CardTitle>
+              <CardDescription className="text-center text-blue-700">
               Enter your credentials to access the admin dashboard
             </CardDescription>
           </CardHeader>
@@ -68,13 +70,14 @@ export default function AdminLogin() {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-blue-900 font-semibold">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="admin@walmart.com"
                   {...register('email')}
                   disabled={isLoading}
+                    className="bg-[#e6e98a] border-2 border-[#bfc13d] text-lg py-3 px-5 rounded-xl shadow-md placeholder:text-[#7a7a3a] font-semibold"
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -82,7 +85,7 @@ export default function AdminLogin() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-blue-900 font-semibold">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -90,6 +93,7 @@ export default function AdminLogin() {
                     placeholder="••••••••"
                     {...register('password')}
                     disabled={isLoading}
+                      className="bg-[#e6e98a] border-2 border-[#bfc13d] text-lg py-3 px-5 rounded-xl shadow-md placeholder:text-[#7a7a3a] font-semibold"
                   />
                   <Button
                     type="button"
@@ -114,7 +118,7 @@ export default function AdminLogin() {
             <CardFooter className="flex flex-col space-y-4">
               <Button
                 type="submit"
-                className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg text-lg px-8 py-3 rounded-xl font-bold"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -127,15 +131,16 @@ export default function AdminLogin() {
                 )}
               </Button>
               
-              <div className="text-sm text-center text-muted-foreground">
+                <div className="text-sm text-center text-blue-700">
                 Delivery partner?{' '}
-                <Link href="/delivery/login" className="text-primary hover:underline">
+                  <Link href="/delivery/login" className="text-blue-600 hover:underline font-bold">
                   Login here
                 </Link>
               </div>
             </CardFooter>
           </form>
         </Card>
+        </div>
       </div>
     </Layout>
   );

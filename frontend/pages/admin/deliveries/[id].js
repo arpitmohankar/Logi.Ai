@@ -200,368 +200,371 @@ export default function DeliveryDetailsPage() {
   return (
     <ProtectedRoute allowedRoles={['admin']}>
       <Layout title="Delivery Details">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold">Delivery Details</h1>
-                <p className="text-muted-foreground">
-                  ID: {delivery._id}
-                </p>
+        <div className="aurora-bg min-h-screen">
+          <div className="aurora-bg-after2" />
+          <div className="container mx-auto px-4 py-8 relative z-10">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.back()}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold">Delivery Details</h1>
+                  <p className="text-muted-foreground">
+                    ID: {delivery._id}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteDelivery}
+                      disabled={delivery.status !== 'pending'}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteDelivery}
-                    disabled={delivery.status !== 'pending'}
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
 
-          {isEditing ? (
-            <DeliveryForm
-              initialData={delivery}
-              onSubmit={handleUpdateDelivery}
-              isLoading={false}
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Status and Assignment Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Status & Assignment</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Current Status</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getStatusBadge(delivery.status)}
-                        {getPriorityBadge(delivery.priority)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Created</p>
-                      <p className="font-medium">{formatRelativeTime(delivery.createdAt)}</p>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Delivery Boy Assignment */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium flex items-center gap-2">
-                      <Truck className="h-4 w-4" />
-                      Delivery Assignment
-                    </h4>
-                    
-                    {delivery.assignedTo ? (
-                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{delivery.assignedTo.name}</p>
-                            <p className="text-sm text-muted-foreground">{delivery.assignedTo.phone}</p>
-                          </div>
+            {isEditing ? (
+              <DeliveryForm
+                initialData={delivery}
+                onSubmit={handleUpdateDelivery}
+                isLoading={false}
+              />
+            ) : (
+              <div className="space-y-6">
+                {/* Status and Assignment Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Status & Assignment</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Current Status</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {getStatusBadge(delivery.status)}
+                          {getPriorityBadge(delivery.priority)}
                         </div>
-                        {delivery.status === 'pending' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedDeliveryBoy('')}
-                          >
-                            Change
-                          </Button>
-                        )}
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Alert>
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            This delivery is not assigned to any delivery partner yet.
-                          </AlertDescription>
-                        </Alert>
-                        
-                        <div className="flex gap-2">
-                          <Select
-                            value={selectedDeliveryBoy}
-                            onValueChange={setSelectedDeliveryBoy}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Select delivery partner" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {deliveryBoys.map((boy) => (
-                                <SelectItem key={boy._id} value={boy._id}>
-                                  <div className="flex items-center justify-between w-full">
-                                    <span>{boy.name}</span>
-                                    <span className="text-xs text-muted-foreground ml-2">
-                                      ({boy.activeDeliveries} active)
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Created</p>
+                        <p className="font-medium">{formatRelativeTime(delivery.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Delivery Boy Assignment */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        Delivery Assignment
+                      </h4>
+                      
+                      {delivery.assignedTo ? (
+                        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{delivery.assignedTo.name}</p>
+                              <p className="text-sm text-muted-foreground">{delivery.assignedTo.phone}</p>
+                            </div>
+                          </div>
+                          {delivery.status === 'pending' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedDeliveryBoy('')}
+                            >
+                              Change
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              This delivery is not assigned to any delivery partner yet.
+                            </AlertDescription>
+                          </Alert>
                           
-                          <Button
-                            onClick={handleAssignDeliveryBoy}
-                            disabled={!selectedDeliveryBoy || isAssigning}
-                          >
-                            {isAssigning ? 'Assigning...' : 'Assign'}
-                          </Button>
+                          <div className="flex gap-2">
+                            <Select
+                              value={selectedDeliveryBoy}
+                              onValueChange={setSelectedDeliveryBoy}
+                            >
+                              <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Select delivery partner" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {deliveryBoys.map((boy) => (
+                                  <SelectItem key={boy._id} value={boy._id}>
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>{boy.name}</span>
+                                      <span className="text-xs text-muted-foreground ml-2">
+                                        ({boy.activeDeliveries} active)
+                                      </span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                            <Button
+                              onClick={handleAssignDeliveryBoy}
+                              disabled={!selectedDeliveryBoy || isAssigning}
+                            >
+                              {isAssigning ? 'Assigning...' : 'Assign'}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Tabs for Details */}
-              <Tabs defaultValue="details" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="location">Location</TabsTrigger>
-                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                </TabsList>
+                {/* Tabs for Details */}
+                <Tabs defaultValue="details" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="location">Location</TabsTrigger>
+                    <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="details" className="space-y-4">
-                  {/* Customer Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        Customer Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Name</p>
-                        <p className="font-medium">{delivery.customerName}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <a 
-                          href={`tel:${delivery.customerPhone}`}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          {formatPhoneNumber(delivery.customerPhone)}
-                        </a>
-                      </div>
-                      {delivery.customerEmail && (
-                        <div className="md:col-span-2">
-                          <p className="text-sm text-muted-foreground">Email</p>
+                  <TabsContent value="details" className="space-y-4">
+                    {/* Customer Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <User className="h-5 w-5" />
+                          Customer Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Name</p>
+                          <p className="font-medium">{delivery.customerName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Phone</p>
                           <a 
-                            href={`mailto:${delivery.customerEmail}`}
+                            href={`tel:${delivery.customerPhone}`}
                             className="font-medium text-primary hover:underline"
                           >
-                            {delivery.customerEmail}
+                            {formatPhoneNumber(delivery.customerPhone)}
                           </a>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                        {delivery.customerEmail && (
+                          <div className="md:col-span-2">
+                            <p className="text-sm text-muted-foreground">Email</p>
+                            <a 
+                              href={`mailto:${delivery.customerEmail}`}
+                              className="font-medium text-primary hover:underline"
+                            >
+                              {delivery.customerEmail}
+                            </a>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                  {/* Package Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Package className="h-5 w-5" />
-                        Package Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Description</p>
-                        <p className="font-medium">{delivery.packageInfo.description}</p>
-                      </div>
-                      <div className="grid gap-4 md:grid-cols-3">
+                    {/* Package Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Package className="h-5 w-5" />
+                          Package Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
                         <div>
-                          <p className="text-sm text-muted-foreground">Weight</p>
-                          <p className="font-medium">{delivery.packageInfo.weight} kg</p>
+                          <p className="text-sm text-muted-foreground">Description</p>
+                          <p className="font-medium">{delivery.packageInfo.description}</p>
                         </div>
-                        {delivery.packageInfo.value && (
+                        <div className="grid gap-4 md:grid-cols-3">
                           <div>
-                            <p className="text-sm text-muted-foreground">Value</p>
-                            <p className="font-medium">{formatCurrency(delivery.packageInfo.value)}</p>
+                            <p className="text-sm text-muted-foreground">Weight</p>
+                            <p className="font-medium">{delivery.packageInfo.weight} kg</p>
                           </div>
-                        )}
-                        {delivery.packageInfo.fragile && (
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-orange-600" />
-                            <Badge variant="outline" className="text-orange-600 border-orange-600">
-                              Fragile
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Delivery Schedule */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
-                        Delivery Schedule
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Scheduled Date</p>
-                          <p className="font-medium">{formatDate(delivery.scheduledDate)}</p>
-                        </div>
-                        {delivery.deliveryWindow && (
-                          <div>
-                            <p className="text-sm text-muted-foreground">Time Window</p>
-                            <p className="font-medium">
-                              {delivery.deliveryWindow.start} - {delivery.deliveryWindow.end}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      {delivery.deliveryInstructions && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Instructions</p>
-                          <p className="font-medium">{delivery.deliveryInstructions}</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="location">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5" />
-                        Delivery Location
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Full Address</p>
-                        <p className="font-medium">{formatAddress(delivery.address)}</p>
-                      </div>
-                      
-                      {/* Map */}
-                      <div className="h-[400px] rounded-lg overflow-hidden">
-                        <Map
-                          center={delivery.coordinates}
-                          zoom={15}
-                          markers={[{
-                            id: delivery._id,
-                            lat: delivery.coordinates.lat,
-                            lng: delivery.coordinates.lng,
-                            title: delivery.customerName,
-                            type: 'delivery'
-                          }]}
-                          height="100%"
-                          width="100%"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="timeline">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Delivery Timeline</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex gap-4">
-                          <div className="relative">
-                            <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                              <CheckCircle className="h-5 w-5 text-green-600" />
+                          {delivery.packageInfo.value && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Value</p>
+                              <p className="font-medium">{formatCurrency(delivery.packageInfo.value)}</p>
                             </div>
-                            <div className="absolute top-10 left-5 h-full w-0.5 bg-gray-200" />
-                          </div>
-                          <div className="flex-1 pb-8">
-                            <h4 className="font-medium">Order Created</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formatDate(delivery.createdAt)} at {formatTime(delivery.createdAt)}
-                            </p>
-                            <p className="text-sm mt-1">
-                              Created by {delivery.createdBy?.name || 'Admin'}
-                            </p>
-                          </div>
+                          )}
+                          {delivery.packageInfo.fragile && (
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4 text-orange-600" />
+                              <Badge variant="outline" className="text-orange-600 border-orange-600">
+                                Fragile
+                              </Badge>
+                            </div>
+                          )}
                         </div>
+                      </CardContent>
+                    </Card>
 
-                        {delivery.assignedTo && (
+                    {/* Delivery Schedule */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Calendar className="h-5 w-5" />
+                          Delivery Schedule
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Scheduled Date</p>
+                            <p className="font-medium">{formatDate(delivery.scheduledDate)}</p>
+                          </div>
+                          {delivery.deliveryWindow && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Time Window</p>
+                              <p className="font-medium">
+                                {delivery.deliveryWindow.start} - {delivery.deliveryWindow.end}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        {delivery.deliveryInstructions && (
+                          <div>
+                            <p className="text-sm text-muted-foreground">Instructions</p>
+                            <p className="font-medium">{delivery.deliveryInstructions}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="location">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5" />
+                          Delivery Location
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Full Address</p>
+                          <p className="font-medium">{formatAddress(delivery.address)}</p>
+                        </div>
+                        
+                        {/* Map */}
+                        <div className="h-[400px] rounded-lg overflow-hidden">
+                          <Map
+                            center={delivery.coordinates}
+                            zoom={15}
+                            markers={[{
+                              id: delivery._id,
+                              lat: delivery.coordinates.lat,
+                              lng: delivery.coordinates.lng,
+                              title: delivery.customerName,
+                              type: 'delivery'
+                            }]}
+                            height="100%"
+                            width="100%"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="timeline">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Delivery Timeline</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
                           <div className="flex gap-4">
                             <div className="relative">
-                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-blue-600" />
+                              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle className="h-5 w-5 text-green-600" />
                               </div>
                               <div className="absolute top-10 left-5 h-full w-0.5 bg-gray-200" />
                             </div>
                             <div className="flex-1 pb-8">
-                              <h4 className="font-medium">Assigned to Delivery Partner</h4>
+                              <h4 className="font-medium">Order Created</h4>
                               <p className="text-sm text-muted-foreground">
-                                {delivery.assignedTo.name}
+                                {formatDate(delivery.createdAt)} at {formatTime(delivery.createdAt)}
+                              </p>
+                              <p className="text-sm mt-1">
+                                Created by {delivery.createdBy?.name || 'Admin'}
                               </p>
                             </div>
                           </div>
-                        )}
 
-                        {delivery.actualDeliveryTime && (
-                          <div className="flex gap-4">
-                            <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                              <CheckCircle className="h-5 w-5 text-green-600" />
+                          {delivery.assignedTo && (
+                            <div className="flex gap-4">
+                              <div className="relative">
+                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <User className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div className="absolute top-10 left-5 h-full w-0.5 bg-gray-200" />
+                              </div>
+                              <div className="flex-1 pb-8">
+                                <h4 className="font-medium">Assigned to Delivery Partner</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {delivery.assignedTo.name}
+                                </p>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium">Delivered</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {formatDate(delivery.actualDeliveryTime)} at {formatTime(delivery.actualDeliveryTime)}
-                              </p>
+                          )}
+
+                          {delivery.actualDeliveryTime && (
+                            <div className="flex gap-4">
+                              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-medium">Delivered</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatDate(delivery.actualDeliveryTime)} at {formatTime(delivery.actualDeliveryTime)}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+          </div>
         </div>
       </Layout>
     </ProtectedRoute>
