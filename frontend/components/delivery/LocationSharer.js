@@ -15,7 +15,8 @@ import { toast } from 'react-hot-toast';
 const LocationSharer = ({ delivery, onClose }) => {
   const [trackingCode, setTrackingCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]   = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
 
   const generateTrackingCode = async () => {
     setIsGenerating(true);
@@ -42,10 +43,10 @@ const LocationSharer = ({ delivery, onClose }) => {
     window.open(`https://wa.me/${delivery.customerPhone}?text=${encodeURIComponent(message)}`);
   };
 
-  const shareViaSMS = () => {
-    const message = `Your delivery tracking code: ${trackingCode}. Track at: ${window.location.origin}/track`;
-    window.open(`sms:${delivery.customerPhone}?body=${encodeURIComponent(message)}`);
-  };
+  // const shareViaSMS = () => {
+  //   const message = `Your delivery tracking code: ${trackingCode}. Track at: ${window.location.origin}/track`;
+  //   window.open(`sms:${delivery.customerPhone}?body=${encodeURIComponent(message)}`);
+  // };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -103,12 +104,29 @@ const LocationSharer = ({ delivery, onClose }) => {
                 >
                   WhatsApp
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   onClick={shareViaSMS}
                 >
                   SMS
-                </Button>
+                </Button> */}
+                  <Button
+                      className="w-full"
+                      disabled={isEmailing}
+                      onClick={async () => {
+                        setIsEmailing(true);
+                        try {
+                          await deliveryAPI.emailTrackingCode(delivery._id);
+                          toast.success('Email sent to customer & admin');
+                        } catch {
+                          toast.error('Failed to send email');
+                        } finally {
+                          setIsEmailing(false);
+                        }
+                      }}
+                    >
+                      Send via Email
+                    </Button>
               </div>
 
               <div className="text-sm text-center text-muted-foreground">

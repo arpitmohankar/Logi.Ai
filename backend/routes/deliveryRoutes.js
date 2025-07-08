@@ -8,7 +8,8 @@ const {
   generateTrackingCode,
   getDirections,
   uploadDeliveryProof,
-  getDeliveryStats
+  getDeliveryStats,
+  emailTrackingCode
 } = require('../controllers/deliveryController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -29,5 +30,6 @@ router.post('/directions', getDirections);
 router.put('/:id/status', updateDeliveryStatus);
 router.post('/:id/tracking-code', generateTrackingCode);
 router.post('/:id/proof', uploadDeliveryProof);
+router.post('/:id/tracking-email', emailTrackingCode);
 
 module.exports = router;

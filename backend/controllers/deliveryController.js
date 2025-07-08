@@ -2,63 +2,100 @@ const Delivery = require('../models/Delivery');
 const TrackingSession = require('../models/TrackingSession');
 const { optimizeDeliveryRoute, optimizeWithTraffic, getDirections } = require('../utils/routeOptimizer');
 const crypto = require('crypto');
+const { sendEmail }   = require('../utils/emailSender');
 
+// exports.getMyDeliveries = async (req, res) => {
+//   try {
+//     const { status, date } = req.query;
+    
+//     // Build query
+//     const query = { assignedTo: req.user._id };
+    
+//     if (status) {
+//       query.status = status;
+//     } else {
+//       // Default: show active deliveries (include 'assigned' status)
+//       query.status = { $in: ['assigned', 'picked-up', 'in-transit'] };
+//     }
+    
+//     if (date) {
+//       const startDate = new Date(date);
+//       const endDate = new Date(date);
+//       endDate.setDate(endDate.getDate() + 1);
+      
+//       query.scheduledDate = {
+//         $gte: startDate,
+//         $lt: endDate
+//       };
+//     }
+
+//     const deliveries = await Delivery.find(query)
+//       .populate('customerName customerPhone customerEmail address coordinates packageInfo')
+//       .sort({ priority: -1, scheduledDate: 1 });
+
+//     // Ensure coordinates are properly formatted
+//     const formattedDeliveries = deliveries.map(delivery => {
+//       const deliveryObj = delivery.toObject();
+      
+//       // Ensure coordinates exist and are numbers
+//       if (!deliveryObj.coordinates || 
+//           typeof deliveryObj.coordinates.lat !== 'number' || 
+//           typeof deliveryObj.coordinates.lng !== 'number') {
+//         console.warn(`Delivery ${deliveryObj._id} has invalid coordinates`);
+//       }
+      
+//       return deliveryObj;
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       count: formattedDeliveries.length,
+//       data: formattedDeliveries
+//     });
+//   } catch (error) {
+//     console.error('Get deliveries error:', error);
+//     res.status(500).json({
+//       success: false,
+//       error: error.message
+//     });
+//   }
+// };
+
+// @desc   All deliveries assigned to the logged-in driver (with trackingCode)
+// @route  GET /api/delivery/my
+// @access Private (role: delivery)
 exports.getMyDeliveries = async (req, res) => {
   try {
-    const { status, date } = req.query;
-    
-    // Build query
-    const query = { assignedTo: req.user._id };
-    
-    if (status) {
-      query.status = status;
-    } else {
-      // Default: show active deliveries (include 'assigned' status)
-      query.status = { $in: ['assigned', 'picked-up', 'in-transit'] };
-    }
-    
-    if (date) {
-      const startDate = new Date(date);
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 1);
-      
-      query.scheduledDate = {
-        $gte: startDate,
-        $lt: endDate
-      };
-    }
+    // 1. pull the deliveries
+    const deliveries = await Delivery.find({
+      assignedTo: req.user._id,
+      status:     { $in: ['assigned','picked-up','in-transit','delivered'] }
+    }).lean();                              // lean ⇒ plain JS objects
 
-    const deliveries = await Delivery.find(query)
-      .populate('customerName customerPhone customerEmail address coordinates packageInfo')
-      .sort({ priority: -1, scheduledDate: 1 });
+    // 2. look up any active tracking sessions
+    const ids   = deliveries.map(d => d._id);
+    const now   = new Date();
+    const sessions = await TrackingSession.find({
+      deliveryId : { $in: ids },
+      isActive   : true,
+      expiresAt  : { $gt: now }
+    }).select('deliveryId trackingCode').lean();
 
-    // Ensure coordinates are properly formatted
-    const formattedDeliveries = deliveries.map(delivery => {
-      const deliveryObj = delivery.toObject();
-      
-      // Ensure coordinates exist and are numbers
-      if (!deliveryObj.coordinates || 
-          typeof deliveryObj.coordinates.lat !== 'number' || 
-          typeof deliveryObj.coordinates.lng !== 'number') {
-        console.warn(`Delivery ${deliveryObj._id} has invalid coordinates`);
-      }
-      
-      return deliveryObj;
+    const codeMap = {};
+    sessions.forEach(s => { codeMap[s.deliveryId.toString()] = s.trackingCode; });
+
+    // 3. attach trackingCode to each delivery object (but DO NOT save)
+    deliveries.forEach(d => {
+      d.trackingCode = codeMap[d._id.toString()] || null;
     });
 
-    res.status(200).json({
-      success: true,
-      count: formattedDeliveries.length,
-      data: formattedDeliveries
-    });
-  } catch (error) {
-    console.error('Get deliveries error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    res.json({ success:true, data: deliveries });
+  } catch (err) {
+    console.error('getMyDeliveries', err);
+    res.status(500).json({ success:false, error:'Failed to fetch deliveries' });
   }
 };
+
 
 // @desc    Get optimized route for deliveries
 // @route   POST /api/delivery/optimize-route
@@ -314,15 +351,73 @@ exports.generateTrackingCode = async (req, res) => {
   res.json({ success: true, data: { trackingCode: session.trackingCode } });
 };
 
-// Helper function to generate random alphanumeric code
-function generateRandomCode(length) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+// POST /api/delivery/:id/tracking-email
+exports.emailTrackingCode = async (req, res) => {
+  try {
+    const { id } = req.params;                        // delivery id
+    const delivery = await Delivery.findById(id);
+    if (!delivery) {
+      return res.status(404).json({ success: false, error: 'Delivery not found' });
+    }
+    // must be assigned driver
+    if (delivery.assignedTo.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    // ensure session exists
+    let session = await TrackingSession.findOne({
+      deliveryId: id,
+      isActive: true,
+      expiresAt: { $gt: new Date() }
+    });
+    if (!session) {
+      const code = crypto.randomBytes(3).toString('hex').toUpperCase();
+      session = await TrackingSession.create({
+        trackingCode:  code,
+        deliveryId:    id,
+        deliveryBoyId: req.user._id
+      });
+    }
+
+    const trackUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/track?code=${session.trackingCode}`;
+
+    // 1. email customer
+    const customerHtml = `
+      <h3>Your package is on the way!</h3>
+      <p>Tracking code: <strong>${session.trackingCode}</strong></p>
+      <p>You can monitor live progress here: <a href="${trackUrl}">${trackUrl}</a></p>
+    `;
+    await sendEmail({
+      to: delivery.customerEmail,
+      subject: 'Track your delivery',
+      html: customerHtml
+    });
+
+    // 2. email admins (optional list)
+    if (process.env.ADMIN_EMAILS) {
+      const adminHtml = `
+        <p>Tracking code <strong>${session.trackingCode}</strong> generated for delivery
+        <strong>${delivery.customerName}</strong> (${delivery._id}).</p>
+      `;
+      await sendEmail({
+        to: process.env.ADMIN_EMAILS,
+        subject: `Tracking code for delivery ${delivery._id}`,
+        html: adminHtml
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { trackingCode: session.trackingCode }
+    });
+  } catch (err) {
+    console.error('emailTrackingCode error', err);
+    res.status(500).json({ success: false, error: 'Failed to send email' });
   }
-  return result;
-}
+};
+
+
+
 
 // @desc    Get turn-by-turn directions
 // @route   POST /api/delivery/directions

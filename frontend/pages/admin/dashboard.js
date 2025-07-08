@@ -176,15 +176,15 @@ export default function AdminDashboard() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none"  onClick={() => router.push('/admin/deliveries/new')}>
                           <Package className="mr-2 h-4 w-4" />
                           Create New Delivery
                         </Button>
-                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none" onClick={() => router.push('/admin/deliveries')}>
                           <Truck className="mr-2 h-4 w-4" />
                           View All Deliveries
                         </Button>
-                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none">
+                          <Button className="w-full justify-start bg-slate-100 text-blue-900 hover:bg-slate-200 font-semibold rounded-xl px-6 py-3 shadow-none" onClick={() => router.push('/admin/deliveries?status=pending')}>
                           <Clock className="mr-2 h-4 w-4" />
                           Pending Assignments
                         </Button>

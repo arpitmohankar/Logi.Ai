@@ -86,10 +86,38 @@ const DeliveryCard = ({
             </div>
           </div>
 
-          {isExpanded
+
+          <div className="flex items-center gap-2">
+            {/* show code badge if already generated */}
+            {delivery.trackingCode && (
+              <Badge variant="outline" className="font-mono text-xs">
+                {delivery.trackingCode}
+              </Badge>
+            )}
+            {/* share icon – visible for assigned / picked-up / in-transit */}
+            {['assigned','picked-up','in-transit'].includes(delivery.status) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();          // don’t toggle accordion
+                  setShowLocationSharer(true);  // open modal
+                }}
+                className="p-1.5 rounded hover:bg-muted"
+              >
+                <Share2 className="h-4 w-4 text-primary" />
+              </button>
+            )}
+
+            {isExpanded
+              ? <ChevronUp  className="h-4 w-4 text-muted-foreground" />
+              : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            }
+          </div>
+          {/* {isExpanded
             ? <ChevronUp  className="h-4 w-4 text-muted-foreground" />
             : <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          }
+          } */}
+
         </div>
       </div>
 

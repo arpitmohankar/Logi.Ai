@@ -93,7 +93,7 @@ export const adminAPI = {
 
 export const deliveryAPI = {
   // My deliveries
-  getMyDeliveries: (params) => api.get('/delivery/my-deliveries', { params }),
+  getMyDeliveries: () => api.get('/delivery/my-deliveries'),
   getStats: () => api.get('/delivery/stats'),
   
   // Route optimization
@@ -105,6 +105,8 @@ export const deliveryAPI = {
   updateDeliveryStatus: (id, data) => api.put(`/delivery/${id}/status`, data),
   generateTrackingCode: (id) =>
     axios.post(`/api/delivery/${id}/tracking-code`),
+   emailTrackingCode: (id) =>
+    axios.post(`/api/delivery/${id}/tracking-email`),
   uploadDeliveryProof: (id, data) => api.post(`/delivery/${id}/proof`, data),
 };
 
