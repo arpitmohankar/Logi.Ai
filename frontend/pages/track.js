@@ -69,16 +69,17 @@ export default function TrackingPage() {
 
   return (
     <Layout title="Track Delivery">
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <div className="aurora-bg min-h-screen relative" style={{ zIndex: 0 }}>
+        <div className="aurora-bg-after2" style={{ opacity: 0.85, zIndex: 1 }} />
         {/* Header */}
-        <div className="bg-background border-b">
+        <div className="bg-white/80 border-b backdrop-blur z-10 relative">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded bg-walmart-blue flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">W</span>
+                <div className="h-8 w-8 rounded flex items-center justify-center shadow-md bg-white">
+                  <img src="/route.png" alt="Logi.AI Logo" className="h-6 w-6" />
                 </div>
-                <span className="font-bold text-xl">Track Delivery</span>
+                <span className="font-bold text-xl text-blue-900">Logi.AI</span>
               </div>
               {trackingData && (
                 <Button
@@ -94,7 +95,7 @@ export default function TrackingPage() {
         </div>
 
         {/* Content */}
-        <div className="container max-w-6xl mx-auto px-4 py-8">
+        <div className="container max-w-6xl mx-auto px-4 py-8 relative z-20">
           {!trackingData ? (
             <div className="max-w-md mx-auto">
               <Card>
@@ -104,7 +105,7 @@ export default function TrackingPage() {
                   </div>
                   <CardTitle className="text-2xl">Track Your Delivery</CardTitle>
                   <CardDescription>
-                    Enter your 6-character tracking code to see real-time delivery status
+                    Enter your 6-character tracking code to see live delivery status
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -134,11 +135,11 @@ export default function TrackingPage() {
 
         {/* Footer */}
         {!trackingData && (
-          <footer className="border-t mt-auto">
+          <footer className="border-t mt-auto bg-white/80 backdrop-blur z-10 relative">
             <div className="container mx-auto px-4 py-8">
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-blue-700">
                 <p>Need help? Contact support at 1-800-WALMART</p>
-                <p className="mt-2">&copy; 2024 Walmart Delivery. All rights reserved.</p>
+                <p className="mt-2">&copy; 2025 Logi.AI All rights reserved.</p>
               </div>
             </div>
           </footer>

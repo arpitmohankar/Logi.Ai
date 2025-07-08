@@ -75,7 +75,7 @@ export default function Home() {
               <SplitText text="Optimize. Deliver. Save." className="text-blue-900" splitType="chars" />
             </h1>
             <p className="text-base sm:text-lg md:text-2xl text-blue-700 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto" style={{ textShadow: '0 2px 12px rgba(60, 60, 120, 0.10)' }}>
-              Slash delivery times by 25% with our intelligent route optimization. Harness real-time traffic, weather, and multi-stop planning to save fuel, reduce costs and deliver smarter to ensure your B2B logistics are more efficient.
+              SLASH DELIVERY COSTS BY 25% 
             </p>
             {/* Tracking Form */}
             <form onSubmit={handleTrack} className="max-w-full sm:max-w-xl mx-auto mb-6 sm:mb-10">
@@ -266,7 +266,7 @@ export default function Home() {
         {/* Footer */}
         <footer className="border-t py-6 sm:py-8 px-2 sm:px-4 bg-white/80 backdrop-blur relative z-10">
           <div className="container mx-auto text-center text-blue-400 text-xs sm:text-base">
-            <p>&copy; 2024 Logi.AI All rights reserved.</p>
+            <p>&copy; 2025 Logi.AI All rights reserved.</p>
           </div>
         </footer>
       </div>
