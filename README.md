@@ -6,7 +6,7 @@ and multi-stop planning to save fuel, reduce costs and deliver smarter to ensure
 ![thumbnail](https://github.com/user-attachments/assets/4b006b9a-62b7-48dd-bf0d-05423e563d77)
 
 
-## Project Demo Link
+## 🔗 Project Demo Link
 https://youtu.be/aeXinBRXOLc?si=jz9uMgoiy_IKYmOx
 
 ## Installation
@@ -30,8 +30,10 @@ python app.py
 ```
 
 
+## 🔗 The problem we are trying to solve 
+After researching all the route optimization applications, which provide services to B2B logistics we realized the shortcomings of providing real world features for the last mile delivery system. Problems like inefficient delivery routes, unexpected delays and disruptions, lack of visibility and transparency between all parties and the problem of manual errors and faulty coordination were our main goals to solve. On top of this, our application also managed to reduce travel costs seamlessly.
 
-## What makes us stand out?
+## 🔗 What makes us stand out and how are we solving the above problems?
 • **Multi-Stop Route Optimization** - Solves the problem of *inefficient delivery routes*. This feature calculates the most efficient path for multiple delivery stops, reducing travel time, minimizing fuel consumption, and lowering operational costs. In B2B logistics, where deliveries often involve complex routes and tight schedules, this ensures timely and cost-effective operations.
 
 •	**Dynamic Re-Routing** -  Addresses the problem of *unexpected delays and disruptions*. By adapting to real-time changes like traffic congestion, road closures, or weather issues, it keeps deliveries on track. This flexibility prevents late arrivals and maintains smooth operations even when conditions are unpredictable.
@@ -40,7 +42,7 @@ python app.py
 
 •	**Smart Delivery Management** - Resolves the problem of *manual errors and inefficient coordination*. Built a Priority based delivery allocation system based on customer’s choice of urgency. Making the application more reliable for users.
 
-## Tech Stack
+## 🔗 Tech Stack
 ![Logi AI_Readme](https://github.com/user-attachments/assets/de716c23-9d93-4c03-9adc-d2bfa5c7939a)
 
 
