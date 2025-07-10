@@ -234,7 +234,7 @@ const handleSetManualLocation = (lat, lng) => {
   if (!effectiveLocation || !optimizedRoute) return;
   const remainingIds = optimizedRoute.deliveryOrder
         .slice(currentDeliveryIndex)
-       .map(item => item.delivery._id);
+        .map(item => item.delivery._id);
     if (!remainingIds.length) {
      toast.info('No deliveries to optimize');
      return;

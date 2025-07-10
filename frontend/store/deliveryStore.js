@@ -153,7 +153,7 @@ optimizeRoute: async ({ deliveries, startLocation }) => {
         });
         
         set({ 
-          optimizedRoute: response.data.data,
+          optimizedRoute: response.data.data.optimizedRoute || response.data.data,
           isLoading: false 
         });
         
