@@ -13,7 +13,7 @@ const RouteMap = ({
 }) => {
   const [markers, setMarkers] = useState([]);
   const [route, setRoute] = useState(null);
-  const [isReady, setIsReady] = useState(0);
+  const [isReady, setIsReady] = useState(false);
   const [polylinePath, setPolylinePath] = useState(null);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const RouteMap = ({
              }
            };
          });
-
+         setMarkers(deliveryMarkers); 
     } else {
       // Fallback to showing all deliveries without optimization
       deliveryMarkers = deliveries
