@@ -1,6 +1,7 @@
 # 🎯 Logi.AI
 
-Logi.AI is our intelligent route optimization application that leverages machine learning algorithms with real-time traffic and weather to save fuel, reduce costs and deliver smarter by 25% to ensure your B2B logistics are more efficient.
+Logi.AI is our intelligent route optimization application that leverages machine learning algorithms with real-time traffic and weather to save fuel, 
+reduce costs and deliver smarter by 25% to ensure your B2B logistics are more efficient.
 
 ![thumbnail](https://github.com/user-attachments/assets/4b006b9a-62b7-48dd-bf0d-05423e563d77)
 
@@ -42,8 +43,7 @@ After researching various route optimization applications, which provide service
 •	**Smart Delivery Management** - Resolves the problem of *manual errors and inefficient coordination*. Built a Priority based delivery allocation system based on customer’s choice of urgency. Making the application more reliable for users.
 
 ## 🔗 Tech Stack
-![Logi AI_Readme](https://github.com/user-attachments/assets/de716c23-9d93-4c03-9adc-d2bfa5c7939a)
-
+<img width="2187" height="872" alt="Logi AI_Excalidraw" src="https://github.com/user-attachments/assets/757ab59d-2ffe-40a6-9f17-25c94525668a" />
 
 ## License
 
