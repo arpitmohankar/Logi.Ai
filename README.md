@@ -43,6 +43,8 @@ After researching various route optimization applications, which provide service
 •	**Smart Delivery Management 📦** - Resolves the problem of *manual errors and inefficient coordination*. Built a Priority based delivery allocation system based on customer’s choice of urgency. Making the application more reliable for users.
 
 ## 🔗 Tech Stack 
+Dataset used - https://github.com/NeuronalLab/Route_Optimization_Python/blob/main/data_stores.csv 
+
 <img width="2187" height="872" alt="Logi AI_Excalidraw" src="https://github.com/user-attachments/assets/757ab59d-2ffe-40a6-9f17-25c94525668a" />
 
 ## License
