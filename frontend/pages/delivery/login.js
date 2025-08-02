@@ -134,6 +134,11 @@ export default function DeliveryLogin() {
                   Login here
                 </Link>
               </div>
+              <div className="text-sm text-center text-blue-700">
+  <p>Demo login credentials:</p>
+  <p>Delivery boy login: delivery@walmart.com || Delivery@123</p>
+  <p>Admin login: admin@walmart.com || Admin@123</p>
+</div>
             </CardFooter>
           </form>
         </Card>
