@@ -47,6 +47,8 @@ Dataset used - https://github.com/NeuronalLab/Route_Optimization_Python/blob/mai
 
 <img width="2187" height="872" alt="Logi AI_Excalidraw" src="https://github.com/user-attachments/assets/757ab59d-2ffe-40a6-9f17-25c94525668a" />
 
+##  🔗 Deployment
+We have successfully deployed the project using Google Cloud Platform - https://logiai.arpitsocials.in/ 
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
